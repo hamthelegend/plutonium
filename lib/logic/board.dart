@@ -103,8 +103,11 @@ class Board {
     return cell.mass >= cellType.criticalMass;
   }
 
-  UnreactedTable playedAt(
-      {required int x, required int y, required int player}) {
+  UnreactedTable playedAt({
+    required int x,
+    required int y,
+    required int player,
+  }) {
     if (critical) {
       throw MustReactFirstException();
     }

@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 const playerCounts = [2, 3, 4, 5, 6, 7, 8];
 
 enum BoardSize {
@@ -14,3 +16,14 @@ enum BoardSize {
     required this.height,
   });
 }
+
+const playerColors = [
+  Colors.red,
+  Colors.orange,
+  Colors.yellow,
+  Colors.green,
+  Colors.blue,
+  Colors.indigo,
+  Colors.purple,
+  Colors.pink,
+];

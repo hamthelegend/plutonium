@@ -1,24 +1,30 @@
 import 'package:flutter/material.dart';
-
-import '../../logic/constants.dart';
+import 'package:plutonium/logic/game_state.dart';
+import 'package:plutonium/ui/game/components/board_canvas.dart';
 
 class GamePage extends StatelessWidget {
-  final int playerCount;
-  final BoardSize boardSize;
+  final GameState state;
+  final void Function({
+    required int cellColumn,
+    required int cellRow,
+  }) onPlayedAt;
 
   const GamePage({
     super.key,
-    required this.playerCount,
-    required this.boardSize,
+    required this.state,
+    required this.onPlayedAt,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text('Player count: $playerCount'),
-        Text('Board size: $boardSize'),
-      ],
+    return Scaffold(
+      appBar: AppBar(title: Text("Player ${state.currentPlayer + 1}'s turn")),
+      body: Center(
+        child: BoardCanvas(
+          board: state.table.board,
+          onPlayedAt: onPlayedAt,
+        ),
+      ),
     );
   }
 }
