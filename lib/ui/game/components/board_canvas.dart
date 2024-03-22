@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:plutonium/logic/board.dart';
 import 'package:plutonium/logic/constants.dart';
 import 'package:plutonium/logic/matrix.dart';
-import 'package:plutonium/ui/game/components/draw_rotated.dart';
+import 'package:plutonium/ui/util/animation/controlled_animation.dart';
+import 'package:plutonium/ui/util/canvas/draw_rotated.dart';
 
 class BoardCanvas extends StatefulWidget {
   final Board board;
@@ -21,32 +22,50 @@ class BoardCanvas extends StatefulWidget {
 
 class _BoardCanvasState extends State<BoardCanvas>
     with TickerProviderStateMixin {
-  late Animation<double> animation;
-  late AnimationController controller;
   final rotationTween = Tween(begin: -pi, end: pi);
+
+  late ControlledAnimation slowRevolution;
+  late ControlledAnimation mediumRevolution;
+  late ControlledAnimation fastRevolution;
 
   @override
   void initState() {
     super.initState();
 
-    controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 4),
+    void animationListener() {
+      setState(() {});
+    }
+
+    slowRevolution = ControlledAnimation(
+      controller: AnimationController(
+        vsync: this,
+        duration: const Duration(seconds: 6),
+      ),
+      animatable: rotationTween,
+      listener: animationListener,
     );
 
-    animation = rotationTween.animate(controller)
-      ..addListener(() {
-        setState(() {});
-      })
-      ..addStatusListener((final status) {
-        if (status == AnimationStatus.completed) {
-          controller.repeat();
-        } else if (status == AnimationStatus.dismissed) {
-          controller.forward();
-        }
-      });
+    mediumRevolution = ControlledAnimation(
+      controller: AnimationController(
+        vsync: this,
+        duration: const Duration(seconds: 2),
+      ),
+      animatable: rotationTween,
+      listener: animationListener,
+    );
 
-    controller.forward();
+    fastRevolution = ControlledAnimation(
+      controller: AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 500),
+      ),
+      animatable: rotationTween,
+      listener: animationListener,
+    );
+
+    slowRevolution.controller.repeat();
+    mediumRevolution.controller.repeat();
+    fastRevolution.controller.repeat();
   }
 
   @override
@@ -72,21 +91,39 @@ class _BoardCanvasState extends State<BoardCanvas>
             painter: BoardPainter(
               theme: Theme.of(context),
               board: widget.board,
-              angle: animation.value,
+              slowRevolutionAngle: slowRevolution.animation.value,
+              mediumRevolutionAngle: mediumRevolution.animation.value,
+              fastRevolutionAngle: fastRevolution.animation.value,
             ),
           ),
         ),
       );
     });
   }
+
+  @override
+  void dispose() {
+    slowRevolution.controller.dispose();
+    mediumRevolution.controller.dispose();
+    fastRevolution.controller.dispose();
+    super.dispose();
+  }
 }
 
 class BoardPainter extends CustomPainter {
   final ThemeData theme;
   final Board board;
-  final double angle;
+  final double slowRevolutionAngle;
+  final double mediumRevolutionAngle;
+  final double fastRevolutionAngle;
 
-  BoardPainter({required this.theme, required this.board, required this.angle});
+  BoardPainter({
+    required this.theme,
+    required this.board,
+    required this.slowRevolutionAngle,
+    required this.mediumRevolutionAngle,
+    required this.fastRevolutionAngle,
+  });
 
   @override
   void paint(final Canvas canvas, final Size size) {
@@ -96,7 +133,10 @@ class BoardPainter extends CustomPainter {
   }
 
   void drawGridSegments(
-      final Size size, final Canvas canvas, final double cellLength) {
+    final Size size,
+    final Canvas canvas,
+    final double cellLength,
+  ) {
     final paint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = cellLength / 16
@@ -152,7 +192,7 @@ class BoardPainter extends CustomPainter {
   }
 
   void drawOrbs(final Canvas canvas, final Size size, final double cellLength) {
-    final orbRadius = cellLength / 6;
+    final orbRadius = cellLength / 8;
 
     void drawOrbs(
       final int cellRow,
@@ -160,39 +200,70 @@ class BoardPainter extends CustomPainter {
       final int player,
       final int mass,
     ) {
-      void drawOrb([final double revolutionOffset = 0]) {
+      void drawOrb({
+        required final double offsetFromCenter,
+        final double revolutionOffset = 0,
+      }) {
         final cellCenter = Offset(
           (cellColumn + 0.5) * cellLength,
           (cellRow + 0.5) * cellLength,
         );
+
+        final criticalMass = board
+            .cellTypeAt(cellRow: cellRow, cellColumn: cellColumn)
+            .criticalMass;
+
+        final angle = switch (criticalMass - mass) {
+          1 => fastRevolutionAngle,
+          2 => mediumRevolutionAngle,
+          _ => slowRevolutionAngle,
+        };
 
         final paint = Paint()
           ..style = PaintingStyle.fill
           ..color = playerColors[player];
 
         final orbCenter = Offset(
-          cellCenter.dx - (orbRadius * 1.25),
+          cellCenter.dx - offsetFromCenter,
           cellCenter.dy,
         );
 
-        canvas.drawRotated(cellCenter, angle + revolutionOffset, () {
-          canvas.drawCircle(
-            orbCenter,
-            orbRadius,
-            paint,
-          );
-        });
+        final randomRevolutionOffset =
+            Random(cellColumn * cellRow).nextDouble() * 2 * pi;
+
+        canvas.drawRotated(
+          cellCenter,
+          angle + revolutionOffset + randomRevolutionOffset,
+          () {
+            canvas.drawCircle(
+              orbCenter,
+              orbRadius,
+              paint,
+            );
+          },
+        );
       }
 
       if (mass == 1) {
-        drawOrb();
+        drawOrb(offsetFromCenter: orbRadius * 0.75);
       } else if (mass == 2) {
-        drawOrb();
-        drawOrb(pi);
+        final offsetFromCenter = orbRadius * 1.25;
+        drawOrb(offsetFromCenter: offsetFromCenter);
+        drawOrb(
+          offsetFromCenter: offsetFromCenter,
+          revolutionOffset: pi,
+        );
       } else {
-        drawOrb();
-        drawOrb(2 * pi / 3);
-        drawOrb(4 * pi / 3);
+        final offsetFromCenter = orbRadius * 1.75;
+        drawOrb(offsetFromCenter: offsetFromCenter);
+        drawOrb(
+          offsetFromCenter: offsetFromCenter,
+          revolutionOffset: 2 * pi / 3,
+        );
+        drawOrb(
+          offsetFromCenter: offsetFromCenter,
+          revolutionOffset: 4 * pi / 3,
+        );
       }
     }
 
@@ -210,7 +281,7 @@ class BoardPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant final CustomPainter oldDelegate) {
-    return false;
+  bool shouldRepaint(covariant final BoardPainter oldDelegate) {
+    return oldDelegate.slowRevolutionAngle != slowRevolutionAngle;
   }
 }
