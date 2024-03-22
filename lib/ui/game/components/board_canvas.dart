@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:plutonium/logic/board.dart';
 import 'package:plutonium/logic/constants.dart';
 import 'package:plutonium/logic/matrix.dart';
+import 'package:plutonium/ui/game/components/draw_rotated.dart';
 
-class BoardCanvas extends StatelessWidget {
+class BoardCanvas extends StatefulWidget {
   final Board board;
   final void Function({
     required int cellColumn,
@@ -15,10 +16,44 @@ class BoardCanvas extends StatelessWidget {
   const BoardCanvas({super.key, required this.board, required this.onPlayedAt});
 
   @override
+  State<BoardCanvas> createState() => _BoardCanvasState();
+}
+
+class _BoardCanvasState extends State<BoardCanvas>
+    with TickerProviderStateMixin {
+  late Animation<double> animation;
+  late AnimationController controller;
+  final rotationTween = Tween(begin: -pi, end: pi);
+
+  @override
+  void initState() {
+    super.initState();
+
+    controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    );
+
+    animation = rotationTween.animate(controller)
+      ..addListener(() {
+        setState(() {});
+      })
+      ..addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          controller.repeat();
+        } else if (status == AnimationStatus.dismissed) {
+          controller.forward();
+        }
+      });
+
+    controller.forward();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
-      final supposedSegmentWidth = constraints.maxWidth / board.width;
-      final supposedSegmentHeight = constraints.maxHeight / board.height;
+      final supposedSegmentWidth = constraints.maxWidth / widget.board.width;
+      final supposedSegmentHeight = constraints.maxHeight / widget.board.height;
       final gridSegmentLength =
           min(supposedSegmentWidth, supposedSegmentHeight);
 
@@ -28,16 +63,18 @@ class BoardCanvas extends StatelessWidget {
               (details.localPosition.dy / gridSegmentLength).truncate();
           final cellColumn =
               (details.localPosition.dx / gridSegmentLength).truncate();
-          onPlayedAt(cellRow: cellRow, cellColumn: cellColumn);
+          widget.onPlayedAt(cellRow: cellRow, cellColumn: cellColumn);
         },
         child: SizedBox(
-          width: gridSegmentLength * board.width,
-          height: gridSegmentLength * board.height,
+          width: gridSegmentLength * widget.board.width,
+          height: gridSegmentLength * widget.board.height,
           child: CustomPaint(
-              painter: BoardPainter(
-            theme: Theme.of(context),
-            board: board,
-          )),
+            painter: BoardPainter(
+              theme: Theme.of(context),
+              board: widget.board,
+              angle: animation.value,
+            ),
+          ),
         ),
       );
     });
@@ -47,8 +84,9 @@ class BoardCanvas extends StatelessWidget {
 class BoardPainter extends CustomPainter {
   final ThemeData theme;
   final Board board;
+  final double angle;
 
-  BoardPainter({required this.theme, required this.board});
+  BoardPainter({required this.theme, required this.board, required this.angle});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -64,7 +102,7 @@ class BoardPainter extends CustomPainter {
       ..color = theme.colorScheme.outline.withOpacity(0.2)
       ..strokeCap = StrokeCap.round;
 
-    const gap = 16;
+    final gap = cellLength / 4;
 
     void drawGridSegment(Offset p1, Offset p2) {
       canvas.drawLine(p1, p2, paint);
@@ -116,44 +154,39 @@ class BoardPainter extends CustomPainter {
     final orbRadius = cellLength / 6;
 
     void drawOrbs(int cellRow, int cellColumn, int player, int mass) {
-      void drawOrb(Offset center) {
+      void drawOrb([double revolutionOffset = 0]) {
+        final cellCenter = Offset(
+          (cellColumn + 0.5) * cellLength,
+          (cellRow + 0.5) * cellLength,
+        );
+
         final paint = Paint()
           ..style = PaintingStyle.fill
           ..color = playerColors[player];
 
-        canvas.drawCircle(center, orbRadius, paint);
+        final orbCenter = Offset(
+          cellCenter.dx - (orbRadius * 1.25),
+          cellCenter.dy,
+        );
+
+        canvas.drawRotated(cellCenter, angle + revolutionOffset, () {
+          canvas.drawCircle(
+            orbCenter,
+            orbRadius,
+            paint,
+          );
+        });
       }
 
       if (mass == 1) {
-        drawOrb(Offset(
-          (cellColumn + 0.5) * cellLength,
-          (cellRow + 0.5) * cellLength,
-        ));
+        drawOrb();
       } else if (mass == 2) {
-        drawOrb(Offset(
-          (cellColumn + 0.35) * cellLength,
-          (cellRow + 0.35) * cellLength,
-        ));
-        drawOrb(Offset(
-          (cellColumn + 0.65) * cellLength,
-          (cellRow + 0.65) * cellLength,
-        ));
+        drawOrb();
+        drawOrb(pi);
       } else {
-        final triangleBase = orbRadius * 2.5; // adjusted from 2 to 3
-        final triangleHeight = triangleBase * sqrt(3) / 2;
-
-        drawOrb(Offset(
-          (cellColumn + 0.5) * cellLength,
-          (cellRow + 0.5) * cellLength - triangleHeight / 2,
-        ));
-        drawOrb(Offset(
-          (cellColumn + 0.5) * cellLength - triangleBase / 2,
-          (cellRow + 0.5) * cellLength + triangleHeight / 2,
-        ));
-        drawOrb(Offset(
-          (cellColumn + 0.5) * cellLength + triangleBase / 2,
-          (cellRow + 0.5) * cellLength + triangleHeight / 2,
-        ));
+        drawOrb();
+        drawOrb(2 * pi / 3);
+        drawOrb(4 * pi / 3);
       }
     }
 
