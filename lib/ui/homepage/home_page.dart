@@ -19,7 +19,7 @@ class HomePage extends StatelessWidget {
   final void Function() onPlay;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -41,10 +41,10 @@ class HomePage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  LayoutBuilder(builder: (context, constraints) {
+                  LayoutBuilder(builder: (final context, final constraints) {
                     return DropdownMenu(
                       width: constraints.maxWidth,
-                      onSelected: (value) {
+                      onSelected: (final value) {
                         onPlayerCountChange(value ?? playerCount);
                       },
                       initialSelection: 2,
@@ -69,7 +69,8 @@ class HomePage extends StatelessWidget {
                           label: Text(boardSize.label),
                         ),
                     ],
-                    onSelectionChanged: (value) => onBoardSizeChange(value.first),
+                    onSelectionChanged: (final value) =>
+                        onBoardSizeChange(value.first),
                   ),
                   const SizedBox(height: 16),
                   FilledButton(

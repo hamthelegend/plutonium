@@ -38,7 +38,7 @@ class _BoardCanvasState extends State<BoardCanvas>
       ..addListener(() {
         setState(() {});
       })
-      ..addStatusListener((status) {
+      ..addStatusListener((final status) {
         if (status == AnimationStatus.completed) {
           controller.repeat();
         } else if (status == AnimationStatus.dismissed) {
@@ -50,15 +50,15 @@ class _BoardCanvasState extends State<BoardCanvas>
   }
 
   @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
+  Widget build(final BuildContext context) {
+    return LayoutBuilder(builder: (final context, final constraints) {
       final supposedSegmentWidth = constraints.maxWidth / widget.board.width;
       final supposedSegmentHeight = constraints.maxHeight / widget.board.height;
       final gridSegmentLength =
           min(supposedSegmentWidth, supposedSegmentHeight);
 
       return GestureDetector(
-        onTapUp: (details) {
+        onTapUp: (final details) {
           final cellRow =
               (details.localPosition.dy / gridSegmentLength).truncate();
           final cellColumn =
@@ -89,13 +89,14 @@ class BoardPainter extends CustomPainter {
   BoardPainter({required this.theme, required this.board, required this.angle});
 
   @override
-  void paint(Canvas canvas, Size size) {
+  void paint(final Canvas canvas, final Size size) {
     final cellLength = size.width / board.width;
     drawGridSegments(size, canvas, cellLength);
     drawOrbs(canvas, size, cellLength);
   }
 
-  void drawGridSegments(Size size, Canvas canvas, double cellLength) {
+  void drawGridSegments(
+      final Size size, final Canvas canvas, final double cellLength) {
     final paint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = cellLength / 16
@@ -104,11 +105,11 @@ class BoardPainter extends CustomPainter {
 
     final gap = cellLength / 4;
 
-    void drawGridSegment(Offset p1, Offset p2) {
+    void drawGridSegment(final Offset p1, final Offset p2) {
       canvas.drawLine(p1, p2, paint);
     }
 
-    void drawHorizontalSegment(int cellRow, int cellColumn) {
+    void drawHorizontalSegment(final int cellRow, final int cellColumn) {
       drawGridSegment(
         Offset(
           cellColumn * cellLength + gap / 2,
@@ -121,7 +122,7 @@ class BoardPainter extends CustomPainter {
       );
     }
 
-    void drawVerticalSegment(int cellRow, int cellColumn) {
+    void drawVerticalSegment(final int cellRow, final int cellColumn) {
       drawGridSegment(
         Offset(
           cellColumn * cellLength,
@@ -134,7 +135,7 @@ class BoardPainter extends CustomPainter {
       );
     }
 
-    void drawCellGridSegments(int cellRow, int cellColumn) {
+    void drawCellGridSegments(final int cellRow, final int cellColumn) {
       if (cellRow > 0) {
         drawHorizontalSegment(cellRow, cellColumn);
       }
@@ -150,11 +151,16 @@ class BoardPainter extends CustomPainter {
     }
   }
 
-  void drawOrbs(Canvas canvas, Size size, double cellLength) {
+  void drawOrbs(final Canvas canvas, final Size size, final double cellLength) {
     final orbRadius = cellLength / 6;
 
-    void drawOrbs(int cellRow, int cellColumn, int player, int mass) {
-      void drawOrb([double revolutionOffset = 0]) {
+    void drawOrbs(
+      final int cellRow,
+      final int cellColumn,
+      final int player,
+      final int mass,
+    ) {
+      void drawOrb([final double revolutionOffset = 0]) {
         final cellCenter = Offset(
           (cellColumn + 0.5) * cellLength,
           (cellRow + 0.5) * cellLength,
@@ -204,7 +210,7 @@ class BoardPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+  bool shouldRepaint(covariant final CustomPainter oldDelegate) {
     return false;
   }
 }

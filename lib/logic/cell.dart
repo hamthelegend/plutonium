@@ -53,7 +53,7 @@ class Cell {
   String toString() => 'Cell(player: $player, mass: $mass)';
 
   @override
-  bool operator ==(Object other) =>
+  bool operator ==(final Object other) =>
       other is Cell && player == other.player && mass == other.mass;
 
   @override

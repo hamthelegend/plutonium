@@ -2,9 +2,9 @@ import 'dart:ui';
 
 extension DrawRotated on Canvas {
   void drawRotated(
-    Offset center,
-    double angle,
-    VoidCallback drawFunction,
+    final Offset center,
+    final double angle,
+    final VoidCallback drawFunction,
   ) {
     save();
     translate(center.dx, center.dy);

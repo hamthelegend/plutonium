@@ -58,8 +58,8 @@ class Board {
   }
 
   Iterable<int> get playersInBoard => Set.unmodifiable(cellMatrix
-      .map((row) => row.map((cell) => cell.player))
-      .expand((cells) => cells)
+      .map((final row) => row.map((final cell) => cell.player))
+      .expand((final cells) => cells)
       .nonNulls);
 
   Board({required this.cellMatrix}) {
@@ -74,17 +74,20 @@ class Board {
     }
   }
 
-  Board.ofSize({required int width, required int height})
+  Board.ofSize({required final int width, required final int height})
       : this(
             cellMatrix: [
           for (var cellRow = 0; cellRow < height; cellRow++)
             [for (var cellColumn = 0; cellColumn < width; cellColumn++) Cell()]
         ].toUnmodifiableMatrix());
 
-  CellType cellTypeAt({required int cellRow, required int cellColumn}) {
+  CellType cellTypeAt({
+    required final int cellRow,
+    required final int cellColumn,
+  }) {
     final lastRowIndex = height - 1;
     final lastColumnIndex = width - 1;
-    var coordinates = (cellRow, cellColumn);
+    final coordinates = (cellRow, cellColumn);
     if (coordinates == (0, 0) ||
         coordinates == (0, lastColumnIndex) ||
         coordinates == (lastRowIndex, 0) ||
@@ -100,24 +103,25 @@ class Board {
     }
   }
 
-  bool criticalAt({required int cellRow, required int cellColumn}) {
+  bool criticalAt({required final int cellRow, required final int cellColumn}) {
     final cell = cellMatrix.toMatrix()[cellRow][cellColumn];
     final cellType = cellTypeAt(cellRow: cellRow, cellColumn: cellColumn);
     return cell.mass >= cellType.criticalMass;
   }
 
   UnreactedTable playedAt({
-    required int cellRow,
-    required int cellColumn,
-    required int player,
+    required final int cellRow,
+    required final int cellColumn,
+    required final int player,
   }) {
     if (critical) {
       throw MustReactFirstException();
     }
 
     final oldCell = cellMatrix.toMatrix()[cellRow][cellColumn];
-    final newCellMatrix =
-        cellMatrix.map((row) => row.map((cell) => cell).toList()).toList();
+    final newCellMatrix = cellMatrix
+        .map((final row) => row.map((final cell) => cell).toList())
+        .toList();
 
     if (oldCell.player != null && oldCell.player != player) {
       throw InvalidCellPlayerException(cell: oldCell, newPlayer: player);
@@ -139,14 +143,15 @@ class Board {
         [for (var cellColumn = 0; cellColumn < width; cellColumn++) false]
     ];
 
-    bool validCoordinate({required int cellRow, required int cellColumn}) {
+    bool validCoordinate(
+        {required final int cellRow, required final int cellColumn}) {
       return cellRow >= 0 &&
           cellRow < height &&
           cellColumn >= 0 &&
           cellColumn < width;
     }
 
-    void react({required int cellRow, required int cellColumn}) {
+    void react({required final int cellRow, required final int cellColumn}) {
       final adjacentCoordinates = [
         (cellRow, cellColumn - 1),
         (cellRow - 1, cellColumn),

@@ -4,10 +4,11 @@ typedef UnmodifiableMatrix<T> = Iterable<Iterable<T>>;
 
 extension Immutability<T> on Matrix<T> {
   UnmodifiableMatrix<T> toUnmodifiableMatrix() {
-    return List<List<T>>.unmodifiable(map((row) => List<T>.unmodifiable(row)));
+    return List<List<T>>.unmodifiable(
+        map((final row) => List<T>.unmodifiable(row)));
   }
 }
 
 extension Mutability<T> on UnmodifiableMatrix<T> {
-  Matrix<T> toMatrix() => map((row) => row.toList()).toList();
+  Matrix<T> toMatrix() => map((final row) => row.toList()).toList();
 }

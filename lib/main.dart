@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plutonium/logic/constants.dart';
 import 'package:plutonium/ui/game/game_page_controller.dart';
-import 'package:plutonium/ui/homepage/home_page.dart';
 import 'package:plutonium/ui/homepage/home_page_controller.dart';
 
 void main() {
@@ -15,11 +14,11 @@ class MyApp extends StatelessWidget {
   final router = GoRouter(routes: [
     GoRoute(
       path: '/',
-      builder: (context, state) => const HomePageController(),
+      builder: (final context, final state) => const HomePageController(),
       routes: [
         GoRoute(
             path: 'game',
-            builder: (context, state) => GamePageController(
+            builder: (final context, final state) => GamePageController(
                   playerCount: int.parse(
                       state.uri.queryParameters['playerCount'] ?? '2'),
                   boardSize: BoardSize.values.byName(
@@ -30,8 +29,8 @@ class MyApp extends StatelessWidget {
   ]);
 
   @override
-  Widget build(BuildContext context) {
-    var colorSchemeSeed = Colors.green;
+  Widget build(final BuildContext context) {
+    const colorSchemeSeed = Colors.green;
 
     final lightThemeData = ThemeData(
       brightness: Brightness.light,

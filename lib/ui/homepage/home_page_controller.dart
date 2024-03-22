@@ -15,13 +15,14 @@ class _HomePageControllerState extends State<HomePageController> {
   BoardSize boardSize = BoardSize.small;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return HomePage(
       playerCount: playerCount,
-      onPlayerCountChange: (value) => setState(() => playerCount = value),
+      onPlayerCountChange: (final value) => setState(() => playerCount = value),
       boardSize: boardSize,
-      onBoardSizeChange: (value) => setState(() => boardSize = value),
-      onPlay: () => context.go('/game?playerCount=$playerCount&boardSize=${boardSize.name}'),
+      onBoardSizeChange: (final value) => setState(() => boardSize = value),
+      onPlay: () => context
+          .go('/game?playerCount=$playerCount&boardSize=${boardSize.name}'),
     );
   }
 }

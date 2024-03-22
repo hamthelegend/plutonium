@@ -55,16 +55,19 @@ class GameState {
   }
 
   GameState.ofSize({
-    required int playerCount,
-    required int boardWidth,
-    required int boardHeight,
+    required final int playerCount,
+    required final int boardWidth,
+    required final int boardHeight,
   }) : this(
           playerCount: playerCount,
           table: UnreactedTable(
               board: Board.ofSize(width: boardWidth, height: boardHeight)),
         );
 
-  GameState playedAt({required int cellRow, required int cellColumn}) {
+  GameState playedAt({
+    required final int cellRow,
+    required final int cellColumn,
+  }) {
     try {
       final newBoard = table.board.playedAt(
         cellRow: cellRow,

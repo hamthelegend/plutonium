@@ -114,7 +114,7 @@ void main() {
   test('Can play on an empty cell', () {
     final board = Board.ofSize(width: 2, height: 2);
     final newBoard = board.playedAt(cellRow: 1, cellColumn: 1, player: 1);
-    var cellMatrix = newBoard.board.cellMatrix.toMatrix();
+    final cellMatrix = newBoard.board.cellMatrix.toMatrix();
     expect(cellMatrix[0][0], Cell());
     expect(cellMatrix[0][1], Cell());
     expect(cellMatrix[1][0], Cell());
@@ -126,7 +126,7 @@ void main() {
       [Cell(player: 1, mass: 1), Cell(player: 2, mass: 1)],
     ]);
     final newBoard = board.playedAt(cellRow: 0, cellColumn: 1, player: 2);
-    var cellMatrix = newBoard.board.cellMatrix.toMatrix();
+    final cellMatrix = newBoard.board.cellMatrix.toMatrix();
     expect(cellMatrix[0][0], Cell(player: 1, mass: 1));
     expect(cellMatrix[0][1], Cell(player: 2, mass: 2));
   });
@@ -181,7 +181,7 @@ void main() {
       [Cell(player: 1, mass: 1), Cell(player: 1, mass: 1)],
     ]);
     final reactedBoard = board.reacted();
-    var cellMatrix = reactedBoard.board.cellMatrix.toMatrix();
+    final cellMatrix = reactedBoard.board.cellMatrix.toMatrix();
     expect(cellMatrix[0][0], Cell(player: 1, mass: 1));
     expect(cellMatrix[0][1], Cell(player: 1, mass: 2));
     expect(cellMatrix[1][0], Cell(player: 1, mass: 2));

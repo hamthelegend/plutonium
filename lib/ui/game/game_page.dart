@@ -16,7 +16,7 @@ class GamePage extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Player ${state.currentPlayer + 1}'s turn")),
       body: Center(
