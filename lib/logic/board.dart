@@ -47,9 +47,9 @@ class Board {
   int get height => cellMatrix.length;
 
   bool get critical {
-    for (var y = 0; y < height; y++) {
-      for (var x = 0; x < width; x++) {
-        if (criticalAt(x: x, y: y)) {
+    for (var cellRow = 0; cellRow < height; cellRow++) {
+      for (var cellColumn = 0; cellColumn < width; cellColumn++) {
+        if (criticalAt(cellRow: cellRow, cellColumn: cellColumn)) {
           return true;
         }
       }
@@ -77,49 +77,53 @@ class Board {
   Board.ofSize({required int width, required int height})
       : this(
             cellMatrix: [
-          for (var y = 0; y < height; y++)
-            [for (var x = 0; x < width; x++) Cell()]
+          for (var cellRow = 0; cellRow < height; cellRow++)
+            [for (var cellColumn = 0; cellColumn < width; cellColumn++) Cell()]
         ].toUnmodifiableMatrix());
 
-  CellType cellTypeAt({required int x, required int y}) {
-    final lastXIndex = width - 1;
-    final lastYIndex = height - 1;
-    var coordinates = (x, y);
+  CellType cellTypeAt({required int cellRow, required int cellColumn}) {
+    final lastRowIndex = height - 1;
+    final lastColumnIndex = width - 1;
+    var coordinates = (cellRow, cellColumn);
     if (coordinates == (0, 0) ||
-        coordinates == (0, lastYIndex) ||
-        coordinates == (lastXIndex, 0) ||
-        coordinates == (lastXIndex, lastYIndex)) {
+        coordinates == (0, lastColumnIndex) ||
+        coordinates == (lastRowIndex, 0) ||
+        coordinates == (lastRowIndex, lastColumnIndex)) {
       return CellType.corner;
-    } else if (x == 0 || y == 0 || x == lastXIndex || y == lastYIndex) {
+    } else if (cellRow == 0 ||
+        cellColumn == 0 ||
+        cellRow == lastRowIndex ||
+        cellColumn == lastColumnIndex) {
       return CellType.edge;
     } else {
       return CellType.interior;
     }
   }
 
-  bool criticalAt({required int x, required int y}) {
-    final cell = cellMatrix.toMatrix()[y][x];
-    final cellType = cellTypeAt(x: x, y: y);
+  bool criticalAt({required int cellRow, required int cellColumn}) {
+    final cell = cellMatrix.toMatrix()[cellRow][cellColumn];
+    final cellType = cellTypeAt(cellRow: cellRow, cellColumn: cellColumn);
     return cell.mass >= cellType.criticalMass;
   }
 
   UnreactedTable playedAt({
-    required int x,
-    required int y,
+    required int cellRow,
+    required int cellColumn,
     required int player,
   }) {
     if (critical) {
       throw MustReactFirstException();
     }
 
-    final oldCell = cellMatrix.toMatrix()[y][x];
+    final oldCell = cellMatrix.toMatrix()[cellRow][cellColumn];
     final newCellMatrix =
         cellMatrix.map((row) => row.map((cell) => cell).toList()).toList();
 
     if (oldCell.player != null && oldCell.player != player) {
       throw InvalidCellPlayerException(cell: oldCell, newPlayer: player);
     }
-    newCellMatrix[y][x] = Cell(player: player, mass: oldCell.mass + 1);
+    newCellMatrix[cellRow][cellColumn] =
+        Cell(player: player, mass: oldCell.mass + 1);
     return UnreactedTable(
         board: Board(cellMatrix: List.unmodifiable(newCellMatrix)));
   }
@@ -131,43 +135,47 @@ class Board {
 
     final newCellMatrix = cellMatrix.toMatrix();
     final reactionMatrix = [
-      for (var y = 0; y < height; y++) [for (var x = 0; x < width; x++) false]
+      for (var cellRow = 0; cellRow < height; cellRow++)
+        [for (var cellColumn = 0; cellColumn < width; cellColumn++) false]
     ];
 
-    bool validCoordinate({required int x, required int y}) {
-      return x >= 0 && x < width && y >= 0 && y < height;
+    bool validCoordinate({required int cellRow, required int cellColumn}) {
+      return cellRow >= 0 &&
+          cellRow < height &&
+          cellColumn >= 0 &&
+          cellColumn < width;
     }
 
-    void react({required int x, required int y}) {
+    void react({required int cellRow, required int cellColumn}) {
       final adjacentCoordinates = [
-        (x - 1, y),
-        (x, y - 1),
-        (x + 1, y),
-        (x, y + 1),
+        (cellRow, cellColumn - 1),
+        (cellRow - 1, cellColumn),
+        (cellRow, cellColumn + 1),
+        (cellRow + 1, cellColumn),
       ];
 
-      final oldCell = newCellMatrix[y][x];
-      final cellType = cellTypeAt(x: x, y: y);
+      final oldCell = newCellMatrix[cellRow][cellColumn];
+      final cellType = cellTypeAt(cellRow: cellRow, cellColumn: cellColumn);
       final newMass = oldCell.mass - cellType.criticalMass;
-      newCellMatrix[y][x] = Cell(
+      newCellMatrix[cellRow][cellColumn] = Cell(
         player: newMass > 0 ? oldCell.player : null,
         mass: newMass,
       );
-      reactionMatrix[y][x] = true;
+      reactionMatrix[cellRow][cellColumn] = true;
 
-      for (final (adjacentX, adjacentY) in adjacentCoordinates) {
-        if (validCoordinate(x: adjacentX, y: adjacentY)) {
-          final oldAdjacentCell = newCellMatrix[adjacentY][adjacentX];
-          newCellMatrix[adjacentY][adjacentX] =
+      for (final (adjacentRow, adjacentColumn) in adjacentCoordinates) {
+        if (validCoordinate(cellRow: adjacentRow, cellColumn: adjacentColumn)) {
+          final oldAdjacentCell = newCellMatrix[adjacentRow][adjacentColumn];
+          newCellMatrix[adjacentRow][adjacentColumn] =
               Cell(player: oldCell.player, mass: oldAdjacentCell.mass + 1);
         }
       }
     }
 
-    for (var y = 0; y < height; y++) {
-      for (var x = 0; x < height; x++) {
-        if (criticalAt(x: x, y: y)) {
-          react(x: x, y: y);
+    for (var cellRow = 0; cellRow < height; cellRow++) {
+      for (var cellColumn = 0; cellColumn < height; cellColumn++) {
+        if (criticalAt(cellRow: cellRow, cellColumn: cellColumn)) {
+          react(cellRow: cellRow, cellColumn: cellColumn);
         }
       }
     }

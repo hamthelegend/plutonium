@@ -35,8 +35,12 @@ class _GamePageControllerState extends State<GamePageController> {
   Widget build(BuildContext context) {
     return GamePage(
       state: state,
-      onPlayedAt: ({required cellColumn, required cellRow}) =>
-          setState(() => state = state.playedAt(x: cellColumn, y: cellRow)),
+      onPlayedAt: ({required cellColumn, required cellRow}) => setState(() {
+        state = state.playedAt(
+          cellRow: cellRow,
+          cellColumn: cellColumn,
+        );
+      }),
     );
   }
 }

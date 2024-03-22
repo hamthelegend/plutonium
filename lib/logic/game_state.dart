@@ -64,9 +64,13 @@ class GameState {
               board: Board.ofSize(width: boardWidth, height: boardHeight)),
         );
 
-  GameState playedAt({required int x, required int y}) {
+  GameState playedAt({required int cellRow, required int cellColumn}) {
     try {
-      final newBoard = table.board.playedAt(x: x, y: y, player: currentPlayer);
+      final newBoard = table.board.playedAt(
+        cellRow: cellRow,
+        cellColumn: cellColumn,
+        player: currentPlayer,
+      );
       final newCurrentPlayer = (currentPlayer + 1) % playerCount;
       final newRound = newCurrentPlayer == 0 ? round + 1 : round;
       return GameState(

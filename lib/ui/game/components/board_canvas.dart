@@ -24,11 +24,11 @@ class BoardCanvas extends StatelessWidget {
 
       return GestureDetector(
         onTapUp: (details) {
-          // I don't understand why at this point, y corresponds to column and x corresponds to row
-          // TODO: Fix the naming the playedAt methods so they align with this
-          final cellColumn = (details.localPosition.dy / gridSegmentLength).truncate();
-          final cellRow = (details.localPosition.dx / gridSegmentLength).truncate();
-          onPlayedAt(cellColumn: cellColumn, cellRow: cellRow);
+          final cellRow =
+              (details.localPosition.dy / gridSegmentLength).truncate();
+          final cellColumn =
+              (details.localPosition.dx / gridSegmentLength).truncate();
+          onPlayedAt(cellRow: cellRow, cellColumn: cellColumn);
         },
         child: SizedBox(
           width: gridSegmentLength * board.width,
@@ -70,7 +70,7 @@ class BoardPainter extends CustomPainter {
       canvas.drawLine(p1, p2, paint);
     }
 
-    void drawHorizontalSegment(int cellColumn, int cellRow) {
+    void drawHorizontalSegment(int cellRow, int cellColumn) {
       drawGridSegment(
         Offset(
           cellColumn * cellLength + gap / 2,
@@ -83,7 +83,7 @@ class BoardPainter extends CustomPainter {
       );
     }
 
-    void drawVerticalSegment(int cellColumn, int cellRow) {
+    void drawVerticalSegment(int cellRow, int cellColumn) {
       drawGridSegment(
         Offset(
           cellColumn * cellLength,
@@ -96,18 +96,18 @@ class BoardPainter extends CustomPainter {
       );
     }
 
-    void drawCellGridSegments(int cellColumn, int cellRow) {
+    void drawCellGridSegments(int cellRow, int cellColumn) {
       if (cellRow > 0) {
-        drawHorizontalSegment(cellColumn, cellRow);
+        drawHorizontalSegment(cellRow, cellColumn);
       }
       if (cellColumn > 0) {
-        drawVerticalSegment(cellColumn, cellRow);
+        drawVerticalSegment(cellRow, cellColumn);
       }
     }
 
-    for (var cellColumn = 0; cellColumn < board.width; cellColumn++) {
-      for (var cellRow = 0; cellRow < board.height; cellRow++) {
-        drawCellGridSegments(cellColumn, cellRow);
+    for (var cellRow = 0; cellRow < board.height; cellRow++) {
+      for (var cellColumn = 0; cellColumn < board.width; cellColumn++) {
+        drawCellGridSegments(cellRow, cellColumn);
       }
     }
   }
@@ -115,7 +115,7 @@ class BoardPainter extends CustomPainter {
   void drawOrbs(Canvas canvas, Size size, double cellLength) {
     final orbRadius = cellLength / 6;
 
-    void drawOrbs(int cellColumn, int cellRow, int player, int mass) {
+    void drawOrbs(int cellRow, int cellColumn, int player, int mass) {
       void drawOrb(Offset center) {
         final paint = Paint()
           ..style = PaintingStyle.fill
@@ -158,13 +158,13 @@ class BoardPainter extends CustomPainter {
     }
 
     final cellMatrix = board.cellMatrix.toMatrix();
-    for (var cellColumn = 0; cellColumn < board.height; cellColumn++) {
-      for (var cellRow = 0; cellRow < board.width; cellRow++) {
-        final cell = cellMatrix[cellColumn][cellRow];
+    for (var cellRow = 0; cellRow < board.height; cellRow++) {
+      for (var cellColumn = 0; cellColumn < board.width; cellColumn++) {
+        final cell = cellMatrix[cellRow][cellColumn];
         final player = cell.player;
 
         if (player != null) {
-          drawOrbs(cellColumn, cellRow, player, cell.mass);
+          drawOrbs(cellRow, cellColumn, player, cell.mass);
         }
       }
     }

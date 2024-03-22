@@ -71,15 +71,15 @@ void main() {
 
   test('Can identify cell types correctly', () {
     final board = Board.ofSize(width: 3, height: 3);
-    expect(board.cellTypeAt(x: 0, y: 0), CellType.corner);
-    expect(board.cellTypeAt(x: 1, y: 0), CellType.edge);
-    expect(board.cellTypeAt(x: 2, y: 0), CellType.corner);
-    expect(board.cellTypeAt(x: 0, y: 1), CellType.edge);
-    expect(board.cellTypeAt(x: 1, y: 1), CellType.interior);
-    expect(board.cellTypeAt(x: 2, y: 1), CellType.edge);
-    expect(board.cellTypeAt(x: 0, y: 2), CellType.corner);
-    expect(board.cellTypeAt(x: 1, y: 2), CellType.edge);
-    expect(board.cellTypeAt(x: 2, y: 2), CellType.corner);
+    expect(board.cellTypeAt(cellColumn: 0, cellRow: 0), CellType.corner);
+    expect(board.cellTypeAt(cellColumn: 1, cellRow: 0), CellType.edge);
+    expect(board.cellTypeAt(cellColumn: 2, cellRow: 0), CellType.corner);
+    expect(board.cellTypeAt(cellColumn: 0, cellRow: 1), CellType.edge);
+    expect(board.cellTypeAt(cellColumn: 1, cellRow: 1), CellType.interior);
+    expect(board.cellTypeAt(cellColumn: 2, cellRow: 1), CellType.edge);
+    expect(board.cellTypeAt(cellColumn: 0, cellRow: 2), CellType.corner);
+    expect(board.cellTypeAt(cellColumn: 1, cellRow: 2), CellType.edge);
+    expect(board.cellTypeAt(cellColumn: 2, cellRow: 2), CellType.corner);
   });
 
   test('Can identify critical cells', () {
@@ -87,33 +87,33 @@ void main() {
       [
         Cell(player: 1, mass: 2),
         Cell(player: 2, mass: 3),
-        Cell(player: 1, mass: 5)
+        Cell(player: 1, mass: 5),
       ],
       [
         Cell(player: 2, mass: 4),
         Cell(player: 1, mass: 4),
-        Cell(player: 2, mass: 1)
+        Cell(player: 2, mass: 1),
       ],
       [Cell(player: 1, mass: 1), Cell(player: 2, mass: 1), Cell(mass: 0)],
       [Cell(mass: 0), Cell(mass: 0), Cell(mass: 0)],
     ]);
-    expect(board.criticalAt(x: 0, y: 0), true);
-    expect(board.criticalAt(x: 1, y: 0), true);
-    expect(board.criticalAt(x: 2, y: 0), true);
-    expect(board.criticalAt(x: 0, y: 1), true);
-    expect(board.criticalAt(x: 1, y: 1), true);
-    expect(board.criticalAt(x: 2, y: 1), false);
-    expect(board.criticalAt(x: 0, y: 2), false);
-    expect(board.criticalAt(x: 1, y: 2), false);
-    expect(board.criticalAt(x: 2, y: 2), false);
-    expect(board.criticalAt(x: 0, y: 3), false);
-    expect(board.criticalAt(x: 1, y: 3), false);
-    expect(board.criticalAt(x: 2, y: 3), false);
+    expect(board.criticalAt(cellRow: 0, cellColumn: 0), true);
+    expect(board.criticalAt(cellRow: 0, cellColumn: 1), true);
+    expect(board.criticalAt(cellRow: 0, cellColumn: 2), true);
+    expect(board.criticalAt(cellRow: 1, cellColumn: 0), true);
+    expect(board.criticalAt(cellRow: 1, cellColumn: 1), true);
+    expect(board.criticalAt(cellRow: 1, cellColumn: 2), false);
+    expect(board.criticalAt(cellRow: 2, cellColumn: 0), false);
+    expect(board.criticalAt(cellRow: 2, cellColumn: 1), false);
+    expect(board.criticalAt(cellRow: 2, cellColumn: 2), false);
+    expect(board.criticalAt(cellRow: 3, cellColumn: 0), false);
+    expect(board.criticalAt(cellRow: 3, cellColumn: 1), false);
+    expect(board.criticalAt(cellRow: 3, cellColumn: 2), false);
   });
 
   test('Can play on an empty cell', () {
     final board = Board.ofSize(width: 2, height: 2);
-    final newBoard = board.playedAt(x: 1, y: 1, player: 1);
+    final newBoard = board.playedAt(cellRow: 1, cellColumn: 1, player: 1);
     var cellMatrix = newBoard.board.cellMatrix.toMatrix();
     expect(cellMatrix[0][0], Cell());
     expect(cellMatrix[0][1], Cell());
@@ -125,7 +125,7 @@ void main() {
     final board = Board(cellMatrix: [
       [Cell(player: 1, mass: 1), Cell(player: 2, mass: 1)],
     ]);
-    final newBoard = board.playedAt(x: 1, y: 0, player: 2);
+    final newBoard = board.playedAt(cellRow: 0, cellColumn: 1, player: 2);
     var cellMatrix = newBoard.board.cellMatrix.toMatrix();
     expect(cellMatrix[0][0], Cell(player: 1, mass: 1));
     expect(cellMatrix[0][1], Cell(player: 2, mass: 2));
@@ -227,7 +227,7 @@ void main() {
     final board = Board(cellMatrix: [
       [Cell(player: 1, mass: 1), Cell(player: 2, mass: 1)],
     ]);
-    expect(() => board.playedAt(x: 1, y: 0, player: 1),
+    expect(() => board.playedAt(cellRow: 0, cellColumn: 1, player: 1),
         throwsA(isA<InvalidCellPlayerException>()));
   });
 
@@ -235,7 +235,7 @@ void main() {
     final board = Board(cellMatrix: [
       [Cell(player: 1, mass: 2), Cell(player: 2, mass: 3)],
     ]);
-    expect(() => board.playedAt(x: 0, y: 0, player: 1),
+    expect(() => board.playedAt(cellRow: 0, cellColumn: 0, player: 1),
         throwsA(isA<MustReactFirstException>()));
   });
 

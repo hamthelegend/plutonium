@@ -39,7 +39,7 @@ void main() {
       boardWidth: 3,
       boardHeight: 3,
     );
-    final newGame = state.playedAt(x: 1, y: 1);
+    final newGame = state.playedAt(cellRow: 1, cellColumn: 1);
     expect(newGame.round, 0);
     expect(newGame.currentPlayer, 1);
     expect(newGame.playerCount, 2);
@@ -55,7 +55,7 @@ void main() {
         board: Board.ofSize(width: 3, height: 3),
       ),
     );
-    final newGame = state.playedAt(x: 1, y: 1);
+    final newGame = state.playedAt(cellRow: 1, cellColumn: 1);
     expect(newGame.currentPlayer, 0);
   });
 
@@ -67,7 +67,7 @@ void main() {
         board: Board.ofSize(width: 3, height: 3),
       ),
     );
-    final newGame = state.playedAt(x: 1, y: 1);
+    final newGame = state.playedAt(cellRow: 1, cellColumn: 1);
     expect(newGame.round, 1);
   });
 
@@ -145,7 +145,7 @@ void main() {
           ]),
         ));
     expect(
-      () => state.playedAt(x: 1, y: 1),
+      () => state.playedAt(cellRow: 1, cellColumn: 1),
       throwsA(isA<MustReactFirstException>()),
     );
   });
@@ -160,7 +160,7 @@ void main() {
             [Cell(), Cell()],
           ]),
         ));
-    final playedGame = state.playedAt(x: 0, y: 0);
+    final playedGame = state.playedAt(cellRow: 0, cellColumn: 0);
     expect(state, playedGame);
   });
 }
