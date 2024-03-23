@@ -119,9 +119,7 @@ class Board {
     }
 
     final oldCell = cellMatrix.toMatrix()[cellRow][cellColumn];
-    final newCellMatrix = cellMatrix
-        .map((final row) => row.map((final cell) => cell).toList())
-        .toList();
+    final newCellMatrix = cellMatrix.toMatrix();
 
     if (oldCell.player != null && oldCell.player != player) {
       throw InvalidCellPlayerException(cell: oldCell, newPlayer: player);
@@ -178,7 +176,7 @@ class Board {
     }
 
     for (var cellRow = 0; cellRow < height; cellRow++) {
-      for (var cellColumn = 0; cellColumn < height; cellColumn++) {
+      for (var cellColumn = 0; cellColumn < width; cellColumn++) {
         if (criticalAt(cellRow: cellRow, cellColumn: cellColumn)) {
           react(cellRow: cellRow, cellColumn: cellColumn);
         }
