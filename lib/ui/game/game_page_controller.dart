@@ -41,6 +41,10 @@ class _GamePageControllerState extends State<GamePageController> {
             cellRow: cellRow,
             cellColumn: cellColumn,
           );
+
+          while (state.table.board.critical) {
+            state = state.reacted();
+          }
         });
       },
     );

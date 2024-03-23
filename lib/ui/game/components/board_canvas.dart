@@ -214,7 +214,7 @@ class BoardPainter extends CustomPainter {
             .criticalMass;
 
         final angle = switch (criticalMass - mass) {
-          1 => fastRevolutionAngle,
+          <= 1 => fastRevolutionAngle,
           2 => mediumRevolutionAngle,
           _ => slowRevolutionAngle,
         };
