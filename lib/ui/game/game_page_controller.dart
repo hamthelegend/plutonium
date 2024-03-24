@@ -20,6 +20,7 @@ class GamePageController extends StatefulWidget {
 
 class _GamePageControllerState extends State<GamePageController> {
   late GameState state;
+  var showGameOverScreen = false;
 
   @override
   void initState() {
@@ -32,21 +33,54 @@ class _GamePageControllerState extends State<GamePageController> {
   }
 
   @override
+  void didChangeDependencies() {
+    if (state.gameOver) {
+      setState(() {
+        showGameOverScreen = true;
+      });
+    }
+    super.didChangeDependencies();
+  }
+
+  @override
   Widget build(final BuildContext context) {
+    // WidgetsBinding.instance.addPostFrameCallback((final timeStamp) {
+    //   if (state.gameOver) {
+    //     setState(() {
+    //       showGameOverScreen = true;
+    //     });
+    //   }
+    // });
+
+    void onPlayedAt({required final cellColumn, required final cellRow}) {
+      setState(() {
+        state = state.playedAt(
+          cellRow: cellRow,
+          cellColumn: cellColumn,
+        );
+
+        while (state.table.board.critical) {
+          state = state.reacted();
+        }
+      });
+    }
+
+    void onRestartGame() {
+      setState(() {
+        state = GameState.ofSize(
+          playerCount: widget.playerCount,
+          boardWidth: widget.boardSize.width,
+          boardHeight: widget.boardSize.height,
+        );
+        showGameOverScreen = false;
+      });
+    }
+
     return GamePage(
       state: state,
-      onPlayedAt: ({required final cellColumn, required final cellRow}) {
-        setState(() {
-          state = state.playedAt(
-            cellRow: cellRow,
-            cellColumn: cellColumn,
-          );
-
-          while (state.table.board.critical) {
-            state = state.reacted();
-          }
-        });
-      },
+      onPlayedAt: onPlayedAt,
+      showGameOverScreen: showGameOverScreen,
+      onRestartGame: onRestartGame,
     );
   }
 }
