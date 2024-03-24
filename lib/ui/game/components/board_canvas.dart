@@ -1,10 +1,10 @@
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:plutonium/logic/board.dart';
 import 'package:plutonium/logic/constants.dart';
 import 'package:plutonium/logic/matrix.dart';
-import 'package:plutonium/ui/util/animation/controlled_animation.dart';
 import 'package:plutonium/ui/util/canvas/draw_rotated.dart';
 
 class BoardCanvas extends StatefulWidget {
@@ -24,9 +24,7 @@ class _BoardCanvasState extends State<BoardCanvas>
     with TickerProviderStateMixin {
   final rotationTween = Tween(begin: -pi, end: pi);
 
-  late ControlledAnimation slowRevolution;
-  late ControlledAnimation mediumRevolution;
-  late ControlledAnimation fastRevolution;
+  late AnimationController animationController;
 
   @override
   void initState() {
@@ -36,36 +34,13 @@ class _BoardCanvasState extends State<BoardCanvas>
       setState(() {});
     }
 
-    slowRevolution = ControlledAnimation(
-      controller: AnimationController(
-        vsync: this,
-        duration: const Duration(seconds: 6),
-      ),
-      animatable: rotationTween,
-      listener: animationListener,
-    );
+    animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 8),
+    )
+      ..addListener(animationListener);
 
-    mediumRevolution = ControlledAnimation(
-      controller: AnimationController(
-        vsync: this,
-        duration: const Duration(seconds: 2),
-      ),
-      animatable: rotationTween,
-      listener: animationListener,
-    );
-
-    fastRevolution = ControlledAnimation(
-      controller: AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 500),
-      ),
-      animatable: rotationTween,
-      listener: animationListener,
-    );
-
-    slowRevolution.controller.repeat();
-    mediumRevolution.controller.repeat();
-    fastRevolution.controller.repeat();
+    animationController.repeat();
   }
 
   @override
@@ -91,9 +66,7 @@ class _BoardCanvasState extends State<BoardCanvas>
             painter: BoardPainter(
               theme: Theme.of(context),
               board: widget.board,
-              slowRevolutionAngle: slowRevolution.animation.value,
-              mediumRevolutionAngle: mediumRevolution.animation.value,
-              fastRevolutionAngle: fastRevolution.animation.value,
+              animationProgress: animationController.value,
             ),
           ),
         ),
@@ -103,9 +76,7 @@ class _BoardCanvasState extends State<BoardCanvas>
 
   @override
   void dispose() {
-    slowRevolution.controller.dispose();
-    mediumRevolution.controller.dispose();
-    fastRevolution.controller.dispose();
+    animationController.dispose();
     super.dispose();
   }
 }
@@ -113,16 +84,12 @@ class _BoardCanvasState extends State<BoardCanvas>
 class BoardPainter extends CustomPainter {
   final ThemeData theme;
   final Board board;
-  final double slowRevolutionAngle;
-  final double mediumRevolutionAngle;
-  final double fastRevolutionAngle;
+  final double animationProgress;
 
   BoardPainter({
     required this.theme,
     required this.board,
-    required this.slowRevolutionAngle,
-    required this.mediumRevolutionAngle,
-    required this.fastRevolutionAngle,
+    required this.animationProgress,
   });
 
   @override
@@ -214,9 +181,9 @@ class BoardPainter extends CustomPainter {
             .criticalMass;
 
         final angle = switch (criticalMass - mass) {
-          <= 1 => fastRevolutionAngle,
-          2 => mediumRevolutionAngle,
-          _ => slowRevolutionAngle,
+          <= 1 => lerpDouble(-pi, pi, (animationProgress * 8) % 1)!,
+          2 => lerpDouble(-pi, pi, (animationProgress * 4) % 1)!,
+          _ => lerpDouble(-pi, pi, animationProgress)!,
         };
 
         final paint = Paint()
@@ -282,6 +249,6 @@ class BoardPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant final BoardPainter oldDelegate) {
-    return oldDelegate.slowRevolutionAngle != slowRevolutionAngle;
+    return oldDelegate.animationProgress != animationProgress;
   }
 }

@@ -44,14 +44,6 @@ class _GamePageControllerState extends State<GamePageController> {
 
   @override
   Widget build(final BuildContext context) {
-    // WidgetsBinding.instance.addPostFrameCallback((final timeStamp) {
-    //   if (state.gameOver) {
-    //     setState(() {
-    //       showGameOverScreen = true;
-    //     });
-    //   }
-    // });
-
     void onPlayedAt({required final cellColumn, required final cellRow}) {
       setState(() {
         state = state.playedAt(
