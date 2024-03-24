@@ -20,7 +20,7 @@ void main() {
     final cellMatrix = [
       [Cell(player: 1, mass: 2), Cell(player: 2, mass: 2)],
       [Cell(player: 3, mass: 1), Cell(player: 4, mass: 1)],
-    ];
+    ].toUnmodifiableMatrixView();
     final board = Board(cellMatrix: cellMatrix);
     expect(board.width, 2);
     expect(board.height, 2);
@@ -32,7 +32,7 @@ void main() {
       [Cell(), Cell()],
       [Cell(), Cell()],
       [Cell(), Cell()],
-    ]);
+    ].toUnmodifiableMatrixView());
     expect(board.width, 2);
   });
 
@@ -41,7 +41,7 @@ void main() {
       [Cell(), Cell()],
       [Cell(), Cell()],
       [Cell(), Cell()],
-    ]);
+    ].toUnmodifiableMatrixView());
     expect(board.height, 3);
   });
 
@@ -52,12 +52,12 @@ void main() {
         Cell(player: 2, mass: 3),
         Cell(player: 1, mass: 5),
       ],
-    ]);
+    ].toUnmodifiableMatrixView());
     expect(criticalBoard.critical, true);
 
     final nonCriticalBoard = Board(cellMatrix: [
       [Cell(), Cell(player: 1, mass: 1)],
-    ]);
+    ].toUnmodifiableMatrixView());
     expect(nonCriticalBoard.critical, false);
   });
 
@@ -65,7 +65,7 @@ void main() {
     final board = Board(cellMatrix: [
       [Cell(player: 1, mass: 2), Cell(player: 3, mass: 3)],
       [Cell(), Cell(player: 3, mass: 4)],
-    ]);
+    ].toUnmodifiableMatrixView());
     expect(board.playersInBoard, {1, 3});
   });
 
@@ -96,7 +96,7 @@ void main() {
       ],
       [Cell(player: 1, mass: 1), Cell(player: 2, mass: 1), Cell(mass: 0)],
       [Cell(mass: 0), Cell(mass: 0), Cell(mass: 0)],
-    ]);
+    ].toUnmodifiableMatrixView());
     expect(board.criticalAt(cellRow: 0, cellColumn: 0), true);
     expect(board.criticalAt(cellRow: 0, cellColumn: 1), true);
     expect(board.criticalAt(cellRow: 0, cellColumn: 2), true);
@@ -124,7 +124,7 @@ void main() {
   test('Can play on a non-empty cell', () {
     final board = Board(cellMatrix: [
       [Cell(player: 1, mass: 1), Cell(player: 2, mass: 1)],
-    ]);
+    ].toUnmodifiableMatrixView());
     final newBoard = board.playedAt(cellRow: 0, cellColumn: 1, player: 2);
     final cellMatrix = newBoard.board.cellMatrix.toMatrix();
     expect(cellMatrix[0][0], Cell(player: 1, mass: 1));
@@ -150,7 +150,7 @@ void main() {
         Cell(player: 1, mass: 1),
         Cell(player: 1, mass: 1),
       ],
-    ]);
+    ].toUnmodifiableMatrixView());
     final reactedBoard = board.reacted();
     final cellMatrix = reactedBoard.board.cellMatrix.toMatrix();
     expect(cellMatrix[0][0], Cell(player: 1, mass: 1));
@@ -179,7 +179,7 @@ void main() {
     final board = Board(cellMatrix: [
       [Cell(player: 1, mass: 2), Cell(player: 1, mass: 3)],
       [Cell(player: 1, mass: 1), Cell(player: 1, mass: 1)],
-    ]);
+    ].toUnmodifiableMatrixView());
     final reactedBoard = board.reacted();
     final cellMatrix = reactedBoard.board.cellMatrix.toMatrix();
     expect(cellMatrix[0][0], Cell(player: 1, mass: 1));
@@ -219,14 +219,14 @@ void main() {
         () => Board(cellMatrix: [
               [Cell(), Cell()],
               [Cell()],
-            ]),
+            ].toUnmodifiableMatrixView()),
         throwsA(isA<CrookedBoardException>()));
   });
 
   test('Cannot play at a taken cell', () {
     final board = Board(cellMatrix: [
       [Cell(player: 1, mass: 1), Cell(player: 2, mass: 1)],
-    ]);
+    ].toUnmodifiableMatrixView());
     expect(() => board.playedAt(cellRow: 0, cellColumn: 1, player: 1),
         throwsA(isA<InvalidCellPlayerException>()));
   });
@@ -234,7 +234,7 @@ void main() {
   test('Cannot play on a critical board', () {
     final board = Board(cellMatrix: [
       [Cell(player: 1, mass: 2), Cell(player: 2, mass: 3)],
-    ]);
+    ].toUnmodifiableMatrixView());
     expect(() => board.playedAt(cellRow: 0, cellColumn: 0, player: 1),
         throwsA(isA<MustReactFirstException>()));
   });
@@ -242,7 +242,7 @@ void main() {
   test('Cannot react a non-critical board', () {
     final board = Board(cellMatrix: [
       [Cell(player: 1, mass: 1), Cell(player: 2, mass: 1)],
-    ]);
+    ].toUnmodifiableMatrixView());
     expect(() => board.reacted(), throwsA(isA<NothingToReactException>()));
   });
 }

@@ -78,7 +78,7 @@ void main() {
           board: Board(cellMatrix: [
             [Cell(player: 0, mass: 3), Cell(player: 0, mass: 3)],
             [Cell(player: 0, mass: 3), Cell(player: 0, mass: 3)],
-          ]),
+          ].toUnmodifiableMatrixView()),
         ));
     final reactedGame = state.reacted();
     final table = reactedGame.table as ReactedTable;
@@ -142,7 +142,7 @@ void main() {
           board: Board(cellMatrix: [
             [Cell(player: 0, mass: 3), Cell(player: 0, mass: 3)],
             [Cell(player: 0, mass: 3), Cell(player: 0, mass: 3)],
-          ]),
+          ].toUnmodifiableMatrixView()),
         ));
     expect(
       () => state.playedAt(cellRow: 1, cellColumn: 1),
@@ -158,7 +158,7 @@ void main() {
           board: Board(cellMatrix: [
             [Cell(player: 0, mass: 1), Cell()],
             [Cell(), Cell()],
-          ]),
+          ].toUnmodifiableMatrixView()),
         ));
     final playedGame = state.playedAt(cellRow: 0, cellColumn: 0);
     expect(state, playedGame);

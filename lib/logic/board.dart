@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:plutonium/logic/cell.dart';
 import 'package:plutonium/logic/cell_type.dart';
 import 'package:plutonium/logic/game_table.dart';
@@ -40,7 +42,7 @@ class NothingToReactException extends FormatException {
 }
 
 class Board {
-  final UnmodifiableMatrix<Cell> cellMatrix;
+  final UnmodifiableMatrixView<Cell> cellMatrix;
 
   int get width => cellMatrix.firstOrNull?.length ?? 0;
 
@@ -57,10 +59,11 @@ class Board {
     return false;
   }
 
-  Iterable<int> get playersInBoard => Set.unmodifiable(cellMatrix
+  UnmodifiableSetView<int> get playersInBoard => UnmodifiableSetView(cellMatrix
       .map((final row) => row.map((final cell) => cell.player))
       .expand((final cells) => cells)
-      .nonNulls);
+      .nonNulls
+      .toSet());
 
   Board({required this.cellMatrix}) {
     if (width < 1 || height < 1) {
@@ -79,7 +82,7 @@ class Board {
             cellMatrix: [
           for (var cellRow = 0; cellRow < height; cellRow++)
             [for (var cellColumn = 0; cellColumn < width; cellColumn++) Cell()]
-        ].toUnmodifiableMatrix());
+        ].toUnmodifiableMatrixView());
 
   CellType cellTypeAt({
     required final int cellRow,
@@ -104,7 +107,7 @@ class Board {
   }
 
   bool criticalAt({required final int cellRow, required final int cellColumn}) {
-    final cell = cellMatrix.toMatrix()[cellRow][cellColumn];
+    final cell = cellMatrix[cellRow][cellColumn];
     final cellType = cellTypeAt(cellRow: cellRow, cellColumn: cellColumn);
     return cell.mass >= cellType.criticalMass;
   }
@@ -118,7 +121,7 @@ class Board {
       throw MustReactFirstException();
     }
 
-    final oldCell = cellMatrix.toMatrix()[cellRow][cellColumn];
+    final oldCell = cellMatrix[cellRow][cellColumn];
     final newCellMatrix = cellMatrix.toMatrix();
 
     if (oldCell.player != null && oldCell.player != player) {
@@ -127,7 +130,7 @@ class Board {
     newCellMatrix[cellRow][cellColumn] =
         Cell(player: player, mass: oldCell.mass + 1);
     return UnreactedTable(
-        board: Board(cellMatrix: List.unmodifiable(newCellMatrix)));
+        board: Board(cellMatrix: newCellMatrix.toUnmodifiableMatrixView()));
   }
 
   ReactedTable reacted() {
@@ -184,8 +187,8 @@ class Board {
     }
 
     return ReactedTable(
-      board: Board(cellMatrix: newCellMatrix.toUnmodifiableMatrix()),
-      reactionMatrix: reactionMatrix.toUnmodifiableMatrix(),
+      board: Board(cellMatrix: newCellMatrix.toUnmodifiableMatrixView()),
+      reactionMatrix: reactionMatrix.toUnmodifiableMatrixView(),
     );
   }
 }

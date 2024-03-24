@@ -13,7 +13,7 @@ class UnreactedTable extends GameTable {
 }
 
 class ReactedTable extends GameTable {
-  final UnmodifiableMatrix<bool> reactionMatrix;
+  final UnmodifiableMatrixView<bool> reactionMatrix;
 
   ReactedTable({required super.board, required this.reactionMatrix});
 }
