@@ -1,15 +1,15 @@
 import 'dart:collection';
 
-typedef Matrix<T> = List<List<T>>;
+typedef Matrix<E> = List<List<E>>;
 
-typedef UnmodifiableMatrixView<T> = UnmodifiableListView<UnmodifiableListView<T>>;
+typedef UnmodifiableMatrixView<E> = UnmodifiableListView<UnmodifiableListView<E>>;
 
-extension Immutability<T> on Matrix<T> {
-  UnmodifiableMatrixView<T> toUnmodifiableMatrixView() {
+extension Immutability<E> on Matrix<E> {
+  UnmodifiableMatrixView<E> toUnmodifiableMatrixView() {
     return UnmodifiableListView(map((e) => UnmodifiableListView(e)));
   }
 }
 
-extension Mutability<T> on UnmodifiableMatrixView<T> {
-  Matrix<T> toMatrix() => map((final row) => row.toList()).toList();
+extension Mutability<E> on UnmodifiableMatrixView<E> {
+  Matrix<E> toMatrix() => map((final row) => row.toList()).toList();
 }

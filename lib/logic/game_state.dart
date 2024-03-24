@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'package:plutonium/logic/board.dart';
 import 'package:plutonium/logic/game_table.dart';
 
@@ -34,6 +35,22 @@ class GameState {
   final int playerCount;
   final GameTable table;
 
+  UnmodifiableListView<int> get playersInPlay => UnmodifiableListView([
+        for (var player = 0; player < playerCount; player++)
+          if ((round == 0 && player >= currentPlayer) ||
+              table.board.playersInBoard.contains(player))
+            player,
+      ]);
+
+  int get nextPlayer {
+    final nextPlayerIndex = playersInPlay.indexOf(currentPlayer) + 1;
+    return playersInPlay[nextPlayerIndex % playersInPlay.length];
+  }
+
+  int? get winner => playersInPlay.singleOrNull;
+
+  bool get gameOver => winner != null;
+
   GameState({
     this.round = 0,
     this.currentPlayer = 0,
@@ -54,15 +71,47 @@ class GameState {
     }
   }
 
-  GameState.ofSize({
+  factory GameState.withCorrectedCurrentPlayer({
+    final int round = 0,
+    final int currentPlayer = 0,
+    required final int playerCount,
+    required final GameTable table,
+  }) {
+    final state = GameState(
+      round: round,
+      currentPlayer: currentPlayer,
+      playerCount: playerCount,
+      table: table,
+    );
+
+    if (!state.playersInPlay.contains(state.currentPlayer)) {
+      var correctedPlayer = state.currentPlayer;
+      while (!state.playersInPlay.contains(correctedPlayer)) {
+        correctedPlayer = (correctedPlayer + 1) % state.playerCount;
+      }
+
+      return GameState(
+        round: round,
+        currentPlayer: correctedPlayer,
+        playerCount: playerCount,
+        table: table,
+      );
+    }
+
+    return state;
+  }
+
+  factory GameState.ofSize({
     required final int playerCount,
     required final int boardWidth,
     required final int boardHeight,
-  }) : this(
-          playerCount: playerCount,
-          table: UnreactedTable(
-              board: Board.ofSize(width: boardWidth, height: boardHeight)),
-        );
+  }) {
+    return GameState(
+      playerCount: playerCount,
+      table: UnreactedTable(
+          board: Board.ofSize(width: boardWidth, height: boardHeight)),
+    );
+  }
 
   GameState playedAt({
     required final int cellRow,
@@ -76,9 +125,9 @@ class GameState {
       );
       final newCurrentPlayer = (currentPlayer + 1) % playerCount;
       final newRound = newCurrentPlayer == 0 ? round + 1 : round;
-      return GameState(
+      return GameState.withCorrectedCurrentPlayer(
         round: newRound,
-        currentPlayer: newCurrentPlayer,
+        currentPlayer: nextPlayer,
         playerCount: playerCount,
         table: newBoard,
       );
@@ -88,7 +137,7 @@ class GameState {
   }
 
   GameState reacted() {
-    return GameState(
+    return GameState.withCorrectedCurrentPlayer(
       round: round,
       currentPlayer: currentPlayer,
       playerCount: playerCount,

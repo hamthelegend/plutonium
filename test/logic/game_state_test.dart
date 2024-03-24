@@ -33,6 +33,22 @@ void main() {
     expect(state.table.board, board);
   });
 
+  test('Can create a board with corrected current player', () {
+    final state = GameState.withCorrectedCurrentPlayer(
+      round: 1,
+      currentPlayer: 1,
+      playerCount: 3,
+      table: UnreactedTable(
+        board: Board(
+          cellMatrix: [
+            [Cell(player: 0, mass: 1), Cell(player: 2, mass: 1)],
+          ].toUnmodifiableMatrixView(),
+        ),
+      ),
+    );
+    expect(state.currentPlayer, 2);
+  });
+
   test('Can play a move', () {
     final state = GameState.ofSize(
       playerCount: 2,
@@ -44,18 +60,19 @@ void main() {
     expect(newGame.currentPlayer, 1);
     expect(newGame.playerCount, 2);
     expect(newGame.table.board.width, 3);
-    expect(newGame.table.board.cellMatrix.toMatrix()[1][1].mass, 1);
+    expect(newGame.table.board.cellMatrix[1][1].mass, 1);
   });
 
   test('Can reset the current player when everyone has already played', () {
     final state = GameState(
-      currentPlayer: 1,
       playerCount: 2,
       table: UnreactedTable(
         board: Board.ofSize(width: 3, height: 3),
       ),
     );
-    final newGame = state.playedAt(cellRow: 1, cellColumn: 1);
+    final newGame = state
+        .playedAt(cellRow: 0, cellColumn: 0)
+        .playedAt(cellRow: 1, cellColumn: 1);
     expect(newGame.currentPlayer, 0);
   });
 
@@ -75,14 +92,117 @@ void main() {
     final state = GameState(
         playerCount: 3,
         table: UnreactedTable(
-          board: Board(cellMatrix: [
+          board: Board(
+              cellMatrix: [
             [Cell(player: 0, mass: 3), Cell(player: 0, mass: 3)],
             [Cell(player: 0, mass: 3), Cell(player: 0, mass: 3)],
           ].toUnmodifiableMatrixView()),
         ));
     final reactedGame = state.reacted();
     final table = reactedGame.table as ReactedTable;
-    expect(table.reactionMatrix.toMatrix()[0][0], true);
+    expect(table.reactionMatrix[0][0], true);
+  });
+
+  test('Everyone can play on game start', () {
+    final state = GameState(
+      playerCount: 2,
+      table: UnreactedTable(board: Board.ofSize(width: 2, height: 2)),
+    );
+    expect(state.playersInPlay, [0, 1]);
+  });
+
+  test('Players not in board after round zero can no longer play', () {
+    final state = GameState(
+      round: 2,
+      currentPlayer: 0,
+      playerCount: 3,
+      table: UnreactedTable(
+        board: Board(
+          cellMatrix: [
+            [Cell(player: 0, mass: 1), Cell(player: 2, mass: 1)],
+          ].toUnmodifiableMatrixView(),
+        ),
+      ),
+    );
+    expect(state.playersInPlay, [0, 2]);
+  });
+
+  test('Players immediately eliminated in round zero can no longer play', () {
+    final state = GameState(
+      round: 0,
+      currentPlayer: 2,
+      playerCount: 3,
+      table: UnreactedTable(
+        board: Board(
+          cellMatrix: [
+            [Cell(player: 0, mass: 1), Cell(player: 2, mass: 1)],
+          ].toUnmodifiableMatrixView(),
+        ),
+      ),
+    );
+    expect(state.playersInPlay, [0, 2]);
+  });
+
+  test('Can identify the winner', () {
+    final state = GameState(
+      round: 3,
+      currentPlayer: 2,
+      playerCount: 3,
+      table: UnreactedTable(
+        board: Board(
+          cellMatrix: [
+            [Cell(player: 0, mass: 1)],
+          ].toUnmodifiableMatrixView(),
+        ),
+      ),
+    );
+    expect(state.winner, 0);
+  });
+
+  test('Can identify that there are no winners', () {
+    final state = GameState(
+      round: 0,
+      currentPlayer: 2,
+      playerCount: 3,
+      table: UnreactedTable(
+        board: Board(
+          cellMatrix: [
+            [Cell(player: 0, mass: 1), Cell(player: 2, mass: 1)],
+          ].toUnmodifiableMatrixView(),
+        ),
+      ),
+    );
+    expect(state.winner, null);
+  });
+
+  test('Can identify if the game is over', () {
+    final gameOverState = GameState(
+      round: 3,
+      currentPlayer: 2,
+      playerCount: 3,
+      table: UnreactedTable(
+        board: Board(
+          cellMatrix: [
+            [Cell(player: 0, mass: 1)],
+          ].toUnmodifiableMatrixView(),
+        ),
+      ),
+    );
+    expect(gameOverState.gameOver, true);
+
+    final notOverState = GameState(
+      round: 0,
+      currentPlayer: 2,
+      playerCount: 3,
+      table: UnreactedTable(
+        board: Board(
+          cellMatrix: [
+            [Cell(player: 0, mass: 1), Cell(player: 2, mass: 1)],
+          ].toUnmodifiableMatrixView(),
+        ),
+      ),
+    );
+    expect(notOverState.gameOver, false);
   });
 
   test('Cannot create a state with a negative round', () {
@@ -139,7 +259,8 @@ void main() {
     final state = GameState(
         playerCount: 3,
         table: UnreactedTable(
-          board: Board(cellMatrix: [
+          board: Board(
+              cellMatrix: [
             [Cell(player: 0, mass: 3), Cell(player: 0, mass: 3)],
             [Cell(player: 0, mass: 3), Cell(player: 0, mass: 3)],
           ].toUnmodifiableMatrixView()),
@@ -155,7 +276,8 @@ void main() {
         currentPlayer: 1,
         playerCount: 2,
         table: UnreactedTable(
-          board: Board(cellMatrix: [
+          board: Board(
+              cellMatrix: [
             [Cell(player: 0, mass: 1), Cell()],
             [Cell(), Cell()],
           ].toUnmodifiableMatrixView()),
