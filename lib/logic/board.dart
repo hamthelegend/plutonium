@@ -67,7 +67,7 @@ class Board {
       .nonNulls
       .toSet());
 
-  static void checkSize(final int height, final int width) {
+  static void _checkSize(final int height, final int width) {
     if (height < 1 || width < 1) {
       throw InvalidBoardSizeException(height: height, width: width);
     }
@@ -88,7 +88,7 @@ class Board {
     final height = cellMatrix.length;
     final width = cellMatrix.firstOrNull?.length ?? 0;
 
-    checkSize(height, width);
+    _checkSize(height, width);
 
     return Board._(
       cellMatrix: cellMatrix,
@@ -99,7 +99,7 @@ class Board {
   }
 
   factory Board.ofSize({required final int height, required final int width}) {
-    checkSize(height, width);
+    _checkSize(height, width);
 
     return Board(
       cellMatrix: generateMatrix(height, width, (final index) => Cell())
@@ -170,56 +170,68 @@ class Board {
     }
 
     final newCellMatrix = cellMatrix.toMatrix();
-    final changeMatrix =
+    final newChangeMatrix =
         generateMatrix(height, width, (final index) => Change.none);
-
-    bool validCoordinate({
-      required final int cellRow,
-      required final int cellColumn,
-    }) {
-      return cellRow >= 0 &&
-          cellRow < height &&
-          cellColumn >= 0 &&
-          cellColumn < width;
-    }
-
-    void react({required final int cellRow, required final int cellColumn}) {
-      final adjacentCoordinates = [
-        (cellRow, cellColumn - 1),
-        (cellRow - 1, cellColumn),
-        (cellRow, cellColumn + 1),
-        (cellRow + 1, cellColumn),
-      ];
-
-      final oldCell = newCellMatrix[cellRow][cellColumn];
-      final cellType = cellTypeAt(cellRow: cellRow, cellColumn: cellColumn);
-      final newMass = oldCell.mass - cellType.criticalMass;
-      newCellMatrix[cellRow][cellColumn] = Cell(
-        player: newMass > 0 ? oldCell.player : null,
-        mass: newMass,
-      );
-      changeMatrix[cellRow][cellColumn] = Change.fission;
-
-      for (final (adjacentRow, adjacentColumn) in adjacentCoordinates) {
-        if (validCoordinate(cellRow: adjacentRow, cellColumn: adjacentColumn)) {
-          final oldAdjacentCell = newCellMatrix[adjacentRow][adjacentColumn];
-          newCellMatrix[adjacentRow][adjacentColumn] =
-              Cell(player: oldCell.player, mass: oldAdjacentCell.mass + 1);
-        }
-      }
-    }
 
     for (var cellRow = 0; cellRow < height; cellRow++) {
       for (var cellColumn = 0; cellColumn < width; cellColumn++) {
         if (criticalAt(cellRow: cellRow, cellColumn: cellColumn)) {
-          react(cellRow: cellRow, cellColumn: cellColumn);
+          _react(
+            cellMatrix: newCellMatrix,
+            changeMatrix: newChangeMatrix,
+            cellRow: cellRow,
+            cellColumn: cellColumn,
+          );
         }
       }
     }
 
     return Board(
       cellMatrix: newCellMatrix.toUnmodifiableMatrixView(),
-      changeMatrix: changeMatrix.toUnmodifiableMatrixView(),
+      changeMatrix: newChangeMatrix.toUnmodifiableMatrixView(),
     );
+  }
+
+  void _react({
+    required final Matrix<Cell> cellMatrix,
+    required final Matrix<Change> changeMatrix,
+    required final int cellRow,
+    required final int cellColumn,
+  }) {
+    final adjacentCoordinates = [
+      (cellRow, cellColumn - 1),
+      (cellRow - 1, cellColumn),
+      (cellRow, cellColumn + 1),
+      (cellRow + 1, cellColumn),
+    ];
+
+    final oldCell = cellMatrix[cellRow][cellColumn];
+    final cellType = cellTypeAt(cellRow: cellRow, cellColumn: cellColumn);
+    final newMass = oldCell.mass - cellType.criticalMass;
+
+    cellMatrix[cellRow][cellColumn] = Cell(
+      player: newMass > 0 ? oldCell.player : null,
+      mass: newMass,
+    );
+
+    changeMatrix[cellRow][cellColumn] = Change.fission;
+
+    for (final (adjacentRow, adjacentColumn) in adjacentCoordinates) {
+      if (_isValidCoordinate(cellRow: adjacentRow, cellColumn: adjacentColumn)) {
+        final oldAdjacentCell = cellMatrix[adjacentRow][adjacentColumn];
+        cellMatrix[adjacentRow][adjacentColumn] =
+            Cell(player: oldCell.player, mass: oldAdjacentCell.mass + 1);
+      }
+    }
+  }
+
+  bool _isValidCoordinate({
+    required final int cellRow,
+    required final int cellColumn,
+  }) {
+    return cellRow >= 0 &&
+        cellRow < height &&
+        cellColumn >= 0 &&
+        cellColumn < width;
   }
 }
