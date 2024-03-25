@@ -3,7 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:plutonium/logic/board.dart';
-import 'package:plutonium/logic/constants.dart';
+import 'package:plutonium/constants.dart';
 import 'package:plutonium/logic/matrix.dart';
 import 'package:plutonium/ui/util/canvas/draw_rotated.dart';
 
@@ -196,7 +196,7 @@ class BoardPainter extends CustomPainter {
         );
 
         final randomRevolutionOffset =
-            Random(cellColumn * cellRow).nextDouble() * 2 * pi;
+            Random(31 * cellColumn + cellRow).nextDouble() * 2 * pi;
 
         canvas.drawRotated(
           cellCenter,

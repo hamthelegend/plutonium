@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../logic/constants.dart';
+import '../../constants.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({

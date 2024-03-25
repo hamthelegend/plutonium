@@ -48,7 +48,7 @@ class GamePage extends StatelessWidget {
       appBar: AppBar(title: Text("Player ${state.currentPlayer + 1}'s turn")),
       body: Center(
         child: BoardCanvas(
-          board: state.table.board,
+          board: state.board,
           onPlayedAt: onPlayedAt,
         ),
       ),

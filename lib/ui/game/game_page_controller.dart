@@ -1,8 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:plutonium/logic/game_state.dart';
 import 'package:plutonium/ui/game/game_page.dart';
 
-import '../../logic/constants.dart';
+import '../../constants.dart';
 
 class GamePageController extends StatefulWidget {
   final int playerCount;
@@ -21,6 +23,7 @@ class GamePageController extends StatefulWidget {
 class _GamePageControllerState extends State<GamePageController> {
   late GameState state;
   var showGameOverScreen = false;
+  Timer? timer;
 
   @override
   void initState() {
@@ -50,9 +53,19 @@ class _GamePageControllerState extends State<GamePageController> {
           cellRow: cellRow,
           cellColumn: cellColumn,
         );
+        if (state.board.critical) {
+            state = state.reacted();
+        }
+      });
 
-        while (state.table.board.critical) {
-          state = state.reacted();
+      timer?.cancel();
+      timer = Timer.periodic(reactionAnimationSpeed, (final timer) {
+        if (state.board.critical) {
+          setState(() {
+            state = state.reacted();
+          });
+        } else {
+          timer.cancel();
         }
       });
     }
@@ -74,5 +87,11 @@ class _GamePageControllerState extends State<GamePageController> {
       showGameOverScreen: showGameOverScreen,
       onRestartGame: onRestartGame,
     );
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
   }
 }

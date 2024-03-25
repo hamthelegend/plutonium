@@ -2,15 +2,15 @@ import 'dart:collection';
 
 import 'package:plutonium/logic/cell.dart';
 import 'package:plutonium/logic/cell_type.dart';
-import 'package:plutonium/logic/game_table.dart';
+import 'package:plutonium/logic/change.dart';
 import 'package:plutonium/logic/matrix.dart';
 
 class InvalidBoardSizeException extends FormatException {
-  final int width;
   final int height;
+  final int width;
 
-  InvalidBoardSizeException({required this.width, required this.height})
-      : super('Cannot create $width × $height board. '
+  InvalidBoardSizeException({required this.height, required this.width})
+      : super('Cannot create $height × $width board. '
             'Board must be at least 1 × 1.');
 }
 
@@ -44,6 +44,8 @@ class NothingToReactException extends FormatException {
 class Board {
   final UnmodifiableMatrixView<Cell> cellMatrix;
 
+  final UnmodifiableMatrixView<Change> changeMatrix;
+
   int get width => cellMatrix.firstOrNull?.length ?? 0;
 
   int get height => cellMatrix.length;
@@ -65,24 +67,45 @@ class Board {
       .nonNulls
       .toSet());
 
-  Board({required this.cellMatrix}) {
-    if (width < 1 || height < 1) {
-      throw InvalidBoardSizeException(width: width, height: height);
+  static void checkSize(final int height, final int width) {
+    if (height < 1 || width < 1) {
+      throw InvalidBoardSizeException(height: height, width: width);
     }
+  }
 
+  Board._({required this.cellMatrix, required this.changeMatrix}) {
     for (final row in cellMatrix) {
       if (row.length != width) {
-        throw CrookedBoardException(width: width, height: height);
+        throw CrookedBoardException(height: height, width: width);
       }
     }
   }
 
-  Board.ofSize({required final int width, required final int height})
-      : this(
-            cellMatrix: [
-          for (var cellRow = 0; cellRow < height; cellRow++)
-            [for (var cellColumn = 0; cellColumn < width; cellColumn++) Cell()]
-        ].toUnmodifiableMatrixView());
+  factory Board({
+    required final UnmodifiableMatrixView<Cell> cellMatrix,
+    final UnmodifiableMatrixView<Change>? changeMatrix,
+  }) {
+    final height = cellMatrix.length;
+    final width = cellMatrix.firstOrNull?.length ?? 0;
+
+    checkSize(height, width);
+
+    return Board._(
+      cellMatrix: cellMatrix,
+      changeMatrix: changeMatrix ??
+          generateMatrix(height, width, (final index) => Change.none)
+              .toUnmodifiableMatrixView(),
+    );
+  }
+
+  factory Board.ofSize({required final int height, required final int width}) {
+    checkSize(height, width);
+
+    return Board(
+      cellMatrix: generateMatrix(height, width, (final index) => Cell())
+          .toUnmodifiableMatrixView(),
+    );
+  }
 
   CellType cellTypeAt({
     required final int cellRow,
@@ -112,7 +135,7 @@ class Board {
     return cell.mass >= cellType.criticalMass;
   }
 
-  UnreactedTable playedAt({
+  Board playedAt({
     required final int cellRow,
     required final int cellColumn,
     required final int player,
@@ -127,25 +150,33 @@ class Board {
     if (oldCell.player != null && oldCell.player != player) {
       throw InvalidCellPlayerException(cell: oldCell, newPlayer: player);
     }
+
     newCellMatrix[cellRow][cellColumn] =
         Cell(player: player, mass: oldCell.mass + 1);
-    return UnreactedTable(
-        board: Board(cellMatrix: newCellMatrix.toUnmodifiableMatrixView()));
+
+    final changeMatrix =
+        generateMatrix(height, width, (final index) => Change.none);
+    changeMatrix[cellRow][cellColumn] = Change.materialization;
+
+    return Board(
+      cellMatrix: newCellMatrix.toUnmodifiableMatrixView(),
+      changeMatrix: changeMatrix.toUnmodifiableMatrixView(),
+    );
   }
 
-  ReactedTable reacted() {
+  Board reacted() {
     if (!critical) {
       throw NothingToReactException();
     }
 
     final newCellMatrix = cellMatrix.toMatrix();
-    final reactionMatrix = [
-      for (var cellRow = 0; cellRow < height; cellRow++)
-        [for (var cellColumn = 0; cellColumn < width; cellColumn++) false]
-    ];
+    final changeMatrix =
+        generateMatrix(height, width, (final index) => Change.none);
 
-    bool validCoordinate(
-        {required final int cellRow, required final int cellColumn}) {
+    bool validCoordinate({
+      required final int cellRow,
+      required final int cellColumn,
+    }) {
       return cellRow >= 0 &&
           cellRow < height &&
           cellColumn >= 0 &&
@@ -167,7 +198,7 @@ class Board {
         player: newMass > 0 ? oldCell.player : null,
         mass: newMass,
       );
-      reactionMatrix[cellRow][cellColumn] = true;
+      changeMatrix[cellRow][cellColumn] = Change.fission;
 
       for (final (adjacentRow, adjacentColumn) in adjacentCoordinates) {
         if (validCoordinate(cellRow: adjacentRow, cellColumn: adjacentColumn)) {
@@ -186,9 +217,9 @@ class Board {
       }
     }
 
-    return ReactedTable(
-      board: Board(cellMatrix: newCellMatrix.toUnmodifiableMatrixView()),
-      reactionMatrix: reactionMatrix.toUnmodifiableMatrixView(),
+    return Board(
+      cellMatrix: newCellMatrix.toUnmodifiableMatrixView(),
+      changeMatrix: changeMatrix.toUnmodifiableMatrixView(),
     );
   }
 }

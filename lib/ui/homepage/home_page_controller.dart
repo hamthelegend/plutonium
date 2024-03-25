@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:plutonium/logic/constants.dart';
+import 'package:plutonium/constants.dart';
 import 'package:plutonium/ui/homepage/home_page.dart';
 
 class HomePageController extends StatefulWidget {

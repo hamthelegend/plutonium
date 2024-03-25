@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:plutonium/logic/board.dart';
 import 'package:plutonium/logic/cell.dart';
 import 'package:plutonium/logic/cell_type.dart';
+import 'package:plutonium/logic/change.dart';
 import 'package:plutonium/logic/matrix.dart';
 
 void main() {
@@ -114,7 +115,7 @@ void main() {
   test('Can play on an empty cell', () {
     final board = Board.ofSize(width: 2, height: 2);
     final newBoard = board.playedAt(cellRow: 1, cellColumn: 1, player: 1);
-    final cellMatrix = newBoard.board.cellMatrix.toMatrix();
+    final cellMatrix = newBoard.cellMatrix.toMatrix();
     expect(cellMatrix[0][0], Cell());
     expect(cellMatrix[0][1], Cell());
     expect(cellMatrix[1][0], Cell());
@@ -126,7 +127,7 @@ void main() {
       [Cell(player: 1, mass: 1), Cell(player: 2, mass: 1)],
     ].toUnmodifiableMatrixView());
     final newBoard = board.playedAt(cellRow: 0, cellColumn: 1, player: 2);
-    final cellMatrix = newBoard.board.cellMatrix.toMatrix();
+    final cellMatrix = newBoard.cellMatrix.toMatrix();
     expect(cellMatrix[0][0], Cell(player: 1, mass: 1));
     expect(cellMatrix[0][1], Cell(player: 2, mass: 2));
   });
@@ -152,7 +153,7 @@ void main() {
       ],
     ].toUnmodifiableMatrixView());
     final reactedBoard = board.reacted();
-    final cellMatrix = reactedBoard.board.cellMatrix.toMatrix();
+    final cellMatrix = reactedBoard.cellMatrix;
     expect(cellMatrix[0][0], Cell(player: 1, mass: 1));
     expect(cellMatrix[0][1], Cell(player: 1, mass: 2));
     expect(cellMatrix[0][2], Cell(player: 1, mass: 1));
@@ -163,16 +164,16 @@ void main() {
     expect(cellMatrix[2][1], Cell(player: 1, mass: 2));
     expect(cellMatrix[2][2], Cell(player: 1, mass: 1));
 
-    final reactionMatrix = reactedBoard.reactionMatrix.toMatrix();
-    expect(reactionMatrix[0][0], false);
-    expect(reactionMatrix[0][1], false);
-    expect(reactionMatrix[0][2], false);
-    expect(reactionMatrix[1][0], false);
-    expect(reactionMatrix[1][1], true);
-    expect(reactionMatrix[1][2], false);
-    expect(reactionMatrix[2][0], false);
-    expect(reactionMatrix[2][1], false);
-    expect(reactionMatrix[2][2], false);
+    final changeMatrix = reactedBoard.changeMatrix;
+    expect(changeMatrix[0][0], Change.none);
+    expect(changeMatrix[0][1], Change.none);
+    expect(changeMatrix[0][2], Change.none);
+    expect(changeMatrix[1][0], Change.none);
+    expect(changeMatrix[1][1], Change.fission);
+    expect(changeMatrix[1][2], Change.none);
+    expect(changeMatrix[2][0], Change.none);
+    expect(changeMatrix[2][1], Change.none);
+    expect(changeMatrix[2][2], Change.none);
   });
 
   test('Can calculate a single reaction step properly', () {
@@ -181,17 +182,17 @@ void main() {
       [Cell(player: 1, mass: 1), Cell(player: 1, mass: 1)],
     ].toUnmodifiableMatrixView());
     final reactedBoard = board.reacted();
-    final cellMatrix = reactedBoard.board.cellMatrix.toMatrix();
+    final cellMatrix = reactedBoard.cellMatrix.toMatrix();
     expect(cellMatrix[0][0], Cell(player: 1, mass: 1));
     expect(cellMatrix[0][1], Cell(player: 1, mass: 2));
     expect(cellMatrix[1][0], Cell(player: 1, mass: 2));
     expect(cellMatrix[1][1], Cell(player: 1, mass: 2));
 
-    final reactionMatrix = reactedBoard.reactionMatrix.toMatrix();
-    expect(reactionMatrix[0][0], true);
-    expect(reactionMatrix[0][1], true);
-    expect(reactionMatrix[1][0], false);
-    expect(reactionMatrix[1][1], false);
+    final changeMatrix = reactedBoard.changeMatrix.toMatrix();
+    expect(changeMatrix[0][0], Change.fission);
+    expect(changeMatrix[0][1], Change.fission);
+    expect(changeMatrix[1][0], Change.none);
+    expect(changeMatrix[1][1], Change.none);
   });
 
   test('Cannot create a board with negative width', () {

@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:plutonium/logic/board.dart';
 import 'package:plutonium/logic/cell.dart';
+import 'package:plutonium/logic/change.dart';
 import 'package:plutonium/logic/game_state.dart';
-import 'package:plutonium/logic/game_table.dart';
 import 'package:plutonium/logic/matrix.dart';
 
 void main() {
@@ -15,8 +15,8 @@ void main() {
     expect(state.round, 0);
     expect(state.currentPlayer, 0);
     expect(state.playerCount, 2);
-    expect(state.table.board.width, 3);
-    expect(state.table.board.height, 3);
+    expect(state.board.width, 3);
+    expect(state.board.height, 3);
   });
 
   test('Can create a board with all the parameters specified', () {
@@ -25,12 +25,12 @@ void main() {
       round: 3,
       currentPlayer: 7,
       playerCount: 9,
-      table: UnreactedTable(board: board),
+      board: board,
     );
     expect(state.round, 3);
     expect(state.currentPlayer, 7);
     expect(state.playerCount, 9);
-    expect(state.table.board, board);
+    expect(state.board, board);
   });
 
   test('Can create a board with corrected current player', () {
@@ -38,12 +38,10 @@ void main() {
       round: 1,
       currentPlayer: 1,
       playerCount: 3,
-      table: UnreactedTable(
-        board: Board(
-          cellMatrix: [
-            [Cell(player: 0, mass: 1), Cell(player: 2, mass: 1)],
-          ].toUnmodifiableMatrixView(),
-        ),
+      board: Board(
+        cellMatrix: [
+          [Cell(player: 0, mass: 1), Cell(player: 2, mass: 1)],
+        ].toUnmodifiableMatrixView(),
       ),
     );
     expect(state.currentPlayer, 2);
@@ -59,16 +57,14 @@ void main() {
     expect(newGame.round, 0);
     expect(newGame.currentPlayer, 1);
     expect(newGame.playerCount, 2);
-    expect(newGame.table.board.width, 3);
-    expect(newGame.table.board.cellMatrix[1][1].mass, 1);
+    expect(newGame.board.width, 3);
+    expect(newGame.board.cellMatrix[1][1].mass, 1);
   });
 
   test('Can reset the current player when everyone has already played', () {
     final state = GameState(
       playerCount: 2,
-      table: UnreactedTable(
-        board: Board.ofSize(width: 3, height: 3),
-      ),
+      board: Board.ofSize(width: 3, height: 3),
     );
     final newGame = state
         .playedAt(cellRow: 0, cellColumn: 0)
@@ -80,9 +76,7 @@ void main() {
     final state = GameState(
       currentPlayer: 1,
       playerCount: 2,
-      table: UnreactedTable(
-        board: Board.ofSize(width: 3, height: 3),
-      ),
+      board: Board.ofSize(width: 3, height: 3),
     );
     final newGame = state.playedAt(cellRow: 1, cellColumn: 1);
     expect(newGame.round, 1);
@@ -90,23 +84,21 @@ void main() {
 
   test('Can react a board', () {
     final state = GameState(
-        playerCount: 3,
-        table: UnreactedTable(
-          board: Board(
-              cellMatrix: [
-            [Cell(player: 0, mass: 3), Cell(player: 0, mass: 3)],
-            [Cell(player: 0, mass: 3), Cell(player: 0, mass: 3)],
-          ].toUnmodifiableMatrixView()),
-        ));
+      playerCount: 3,
+      board: Board(
+          cellMatrix: [
+        [Cell(player: 0, mass: 3), Cell(player: 0, mass: 3)],
+        [Cell(player: 0, mass: 3), Cell(player: 0, mass: 3)],
+      ].toUnmodifiableMatrixView()),
+    );
     final reactedGame = state.reacted();
-    final table = reactedGame.table as ReactedTable;
-    expect(table.reactionMatrix[0][0], true);
+    expect(reactedGame.board.changeMatrix[0][0], Change.fission);
   });
 
   test('Everyone can play on game start', () {
     final state = GameState(
       playerCount: 2,
-      table: UnreactedTable(board: Board.ofSize(width: 2, height: 2)),
+      board: Board.ofSize(width: 2, height: 2),
     );
     expect(state.playersInPlay, [0, 1]);
   });
@@ -116,12 +108,10 @@ void main() {
       round: 2,
       currentPlayer: 0,
       playerCount: 3,
-      table: UnreactedTable(
-        board: Board(
-          cellMatrix: [
-            [Cell(player: 0, mass: 1), Cell(player: 2, mass: 1)],
-          ].toUnmodifiableMatrixView(),
-        ),
+      board: Board(
+        cellMatrix: [
+          [Cell(player: 0, mass: 1), Cell(player: 2, mass: 1)],
+        ].toUnmodifiableMatrixView(),
       ),
     );
     expect(state.playersInPlay, [0, 2]);
@@ -132,12 +122,10 @@ void main() {
       round: 0,
       currentPlayer: 2,
       playerCount: 3,
-      table: UnreactedTable(
-        board: Board(
-          cellMatrix: [
-            [Cell(player: 0, mass: 1), Cell(player: 2, mass: 1)],
-          ].toUnmodifiableMatrixView(),
-        ),
+      board: Board(
+        cellMatrix: [
+          [Cell(player: 0, mass: 1), Cell(player: 2, mass: 1)],
+        ].toUnmodifiableMatrixView(),
       ),
     );
     expect(state.playersInPlay, [0, 2]);
@@ -148,12 +136,10 @@ void main() {
       round: 3,
       currentPlayer: 2,
       playerCount: 3,
-      table: UnreactedTable(
-        board: Board(
-          cellMatrix: [
-            [Cell(player: 0, mass: 1)],
-          ].toUnmodifiableMatrixView(),
-        ),
+      board: Board(
+        cellMatrix: [
+          [Cell(player: 0, mass: 1)],
+        ].toUnmodifiableMatrixView(),
       ),
     );
     expect(state.winner, 0);
@@ -164,12 +150,10 @@ void main() {
       round: 0,
       currentPlayer: 2,
       playerCount: 3,
-      table: UnreactedTable(
-        board: Board(
-          cellMatrix: [
-            [Cell(player: 0, mass: 1), Cell(player: 2, mass: 1)],
-          ].toUnmodifiableMatrixView(),
-        ),
+      board: Board(
+        cellMatrix: [
+          [Cell(player: 0, mass: 1), Cell(player: 2, mass: 1)],
+        ].toUnmodifiableMatrixView(),
       ),
     );
     expect(state.winner, null);
@@ -180,12 +164,10 @@ void main() {
       round: 3,
       currentPlayer: 2,
       playerCount: 3,
-      table: UnreactedTable(
-        board: Board(
-          cellMatrix: [
-            [Cell(player: 0, mass: 1)],
-          ].toUnmodifiableMatrixView(),
-        ),
+      board: Board(
+        cellMatrix: [
+          [Cell(player: 0, mass: 1)],
+        ].toUnmodifiableMatrixView(),
       ),
     );
     expect(gameOverState.gameOver, true);
@@ -194,12 +176,10 @@ void main() {
       round: 0,
       currentPlayer: 2,
       playerCount: 3,
-      table: UnreactedTable(
-        board: Board(
-          cellMatrix: [
-            [Cell(player: 0, mass: 1), Cell(player: 2, mass: 1)],
-          ].toUnmodifiableMatrixView(),
-        ),
+      board: Board(
+        cellMatrix: [
+          [Cell(player: 0, mass: 1), Cell(player: 2, mass: 1)],
+        ].toUnmodifiableMatrixView(),
       ),
     );
     expect(notOverState.gameOver, false);
@@ -211,7 +191,7 @@ void main() {
         round: -1,
         currentPlayer: 0,
         playerCount: 2,
-        table: UnreactedTable(board: Board.ofSize(width: 1, height: 1)),
+        board: Board.ofSize(width: 1, height: 1),
       ),
       throwsA(isA<InvalidRoundException>()),
     );
@@ -223,7 +203,7 @@ void main() {
         round: 0,
         currentPlayer: 0,
         playerCount: 1,
-        table: UnreactedTable(board: Board.ofSize(width: 1, height: 1)),
+        board: Board.ofSize(width: 1, height: 1),
       ),
       throwsA(isA<InvalidPlayerCountException>()),
     );
@@ -235,7 +215,7 @@ void main() {
         round: 0,
         currentPlayer: -1,
         playerCount: 2,
-        table: UnreactedTable(board: Board.ofSize(width: 1, height: 1)),
+        board: Board.ofSize(width: 1, height: 1),
       ),
       throwsA(isA<InvalidCurrentPlayerException>()),
     );
@@ -249,7 +229,7 @@ void main() {
         round: 0,
         currentPlayer: 2,
         playerCount: 2,
-        table: UnreactedTable(board: Board.ofSize(width: 1, height: 1)),
+        board: Board.ofSize(width: 1, height: 1),
       ),
       throwsA(isA<InvalidCurrentPlayerException>()),
     );
@@ -258,12 +238,11 @@ void main() {
   test('Cannot play a move on a critical board', () {
     final state = GameState(
         playerCount: 3,
-        table: UnreactedTable(
-          board: Board(
-              cellMatrix: [
+        board: Board(
+          cellMatrix: [
             [Cell(player: 0, mass: 3), Cell(player: 0, mass: 3)],
             [Cell(player: 0, mass: 3), Cell(player: 0, mass: 3)],
-          ].toUnmodifiableMatrixView()),
+          ].toUnmodifiableMatrixView(),
         ));
     expect(
       () => state.playedAt(cellRow: 1, cellColumn: 1),
@@ -275,12 +254,11 @@ void main() {
     final state = GameState(
         currentPlayer: 1,
         playerCount: 2,
-        table: UnreactedTable(
-          board: Board(
-              cellMatrix: [
+        board: Board(
+          cellMatrix: [
             [Cell(player: 0, mass: 1), Cell()],
             [Cell(), Cell()],
-          ].toUnmodifiableMatrixView()),
+          ].toUnmodifiableMatrixView(),
         ));
     final playedGame = state.playedAt(cellRow: 0, cellColumn: 0);
     expect(state, playedGame);

@@ -27,3 +27,5 @@ const playerColors = [
   Colors.purple,
   Colors.pink,
 ];
+
+const reactionAnimationSpeed = Duration(milliseconds: 500);

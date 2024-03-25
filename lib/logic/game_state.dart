@@ -1,7 +1,6 @@
 import 'dart:collection';
 
 import 'package:plutonium/logic/board.dart';
-import 'package:plutonium/logic/game_table.dart';
 
 class InvalidRoundException extends FormatException {
   final int round;
@@ -34,12 +33,12 @@ class GameState {
   final int round;
   final int currentPlayer;
   final int playerCount;
-  final GameTable table;
+  final Board board;
 
   UnmodifiableListView<int> get playersInPlay => UnmodifiableListView([
         for (var player = 0; player < playerCount; player++)
           if ((round == 0 && player >= currentPlayer) ||
-              table.board.playersInBoard.contains(player))
+              board.playersInBoard.contains(player))
             player,
       ]);
 
@@ -56,7 +55,7 @@ class GameState {
     this.round = 0,
     this.currentPlayer = 0,
     required this.playerCount,
-    required this.table,
+    required this.board,
   }) {
     if (round < 0) {
       throw InvalidRoundException(round: round);
@@ -76,13 +75,13 @@ class GameState {
     final int round = 0,
     final int currentPlayer = 0,
     required final int playerCount,
-    required final GameTable table,
+    required final Board board,
   }) {
     final state = GameState(
       round: round,
       currentPlayer: currentPlayer,
       playerCount: playerCount,
-      table: table,
+      board: board,
     );
 
     if (!state.playersInPlay.contains(state.currentPlayer)) {
@@ -95,7 +94,7 @@ class GameState {
         round: round,
         currentPlayer: correctedPlayer,
         playerCount: playerCount,
-        table: table,
+        board: board,
       );
     }
 
@@ -109,8 +108,7 @@ class GameState {
   }) {
     return GameState(
       playerCount: playerCount,
-      table: UnreactedTable(
-          board: Board.ofSize(width: boardWidth, height: boardHeight)),
+      board: Board.ofSize(width: boardWidth, height: boardHeight),
     );
   }
 
@@ -119,7 +117,7 @@ class GameState {
     required final int cellColumn,
   }) {
     try {
-      final newBoard = table.board.playedAt(
+      final newBoard = board.playedAt(
         cellRow: cellRow,
         cellColumn: cellColumn,
         player: currentPlayer,
@@ -130,7 +128,7 @@ class GameState {
         round: newRound,
         currentPlayer: nextPlayer,
         playerCount: playerCount,
-        table: newBoard,
+        board: newBoard,
       );
     } on InvalidCellPlayerException {
       return this;
@@ -142,7 +140,7 @@ class GameState {
       round: round,
       currentPlayer: currentPlayer,
       playerCount: playerCount,
-      table: table.board.reacted(),
+      board: board.reacted(),
     );
   }
 }
