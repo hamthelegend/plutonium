@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:plutonium/logic/game_state.dart';
-import 'package:plutonium/ui/game/components/board_canvas.dart';
+import 'package:plutonium/ui/game/components/board_widget.dart';
 
 class GamePage extends StatelessWidget {
   final GameState state;
@@ -47,7 +47,7 @@ class GamePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text("Player ${state.currentPlayer + 1}'s turn")),
       body: Center(
-        child: BoardCanvas(
+        child: BoardWidget(
           board: state.board,
           onPlayedAt: onPlayedAt,
         ),
