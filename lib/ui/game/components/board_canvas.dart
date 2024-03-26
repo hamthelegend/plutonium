@@ -3,7 +3,6 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:plutonium/logic/matrix.dart';
-import 'package:plutonium/ui/util/canvas/draw_rotated.dart';
 
 import '../../../constants.dart';
 import '../../../logic/board.dart';
