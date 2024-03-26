@@ -67,7 +67,10 @@ class Board {
       .nonNulls
       .toSet());
 
-  static void _checkSize(final int height, final int width) {
+  static void _checkSize({
+    required final int height,
+    required final int width,
+  }) {
     if (height < 1 || width < 1) {
       throw InvalidBoardSizeException(height: height, width: width);
     }
@@ -88,7 +91,7 @@ class Board {
     final height = cellMatrix.length;
     final width = cellMatrix.firstOrNull?.length ?? 0;
 
-    _checkSize(height, width);
+    _checkSize(height: height, width: width);
 
     return Board._(
       cellMatrix: cellMatrix,
@@ -99,7 +102,7 @@ class Board {
   }
 
   factory Board.ofSize({required final int height, required final int width}) {
-    _checkSize(height, width);
+    _checkSize(height: height, width: width);
 
     return Board(
       cellMatrix: generateMatrix(height, width, (final index) => Cell())
@@ -217,7 +220,8 @@ class Board {
     changeMatrix[cellRow][cellColumn] = Change.fission;
 
     for (final (adjacentRow, adjacentColumn) in adjacentCoordinates) {
-      if (_isValidCoordinate(cellRow: adjacentRow, cellColumn: adjacentColumn)) {
+      if (_isValidCoordinate(
+          cellRow: adjacentRow, cellColumn: adjacentColumn)) {
         final oldAdjacentCell = cellMatrix[adjacentRow][adjacentColumn];
         cellMatrix[adjacentRow][adjacentColumn] =
             Cell(player: oldCell.player, mass: oldAdjacentCell.mass + 1);

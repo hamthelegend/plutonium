@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:plutonium/logic/game_state.dart';
 import 'package:plutonium/ui/game/game_page.dart';
 
 import '../../constants.dart';
+import '../../logic/game.dart';
 
 class GamePageController extends StatefulWidget {
   final int playerCount;
@@ -21,71 +21,54 @@ class GamePageController extends StatefulWidget {
 }
 
 class _GamePageControllerState extends State<GamePageController> {
-  late GameState state;
+  late Game game;
   var showGameOverScreen = false;
   Timer? timer;
 
   @override
   void initState() {
     super.initState();
-    state = GameState.ofSize(
+    game = Game(
       playerCount: widget.playerCount,
-      boardWidth: widget.boardSize.width,
       boardHeight: widget.boardSize.height,
+      boardWidth: widget.boardSize.width,
     );
   }
 
   @override
   void didChangeDependencies() {
-    if (state.gameOver) {
-      setState(() {
-        showGameOverScreen = true;
-      });
-    }
+    // if (state.gameOver) {
+    //   setState(() {
+    //     showGameOverScreen = true;
+    //   });
+    // }
     super.didChangeDependencies();
   }
 
   @override
   Widget build(final BuildContext context) {
     void onPlayedAt({required final cellColumn, required final cellRow}) {
-      setState(() {
-        state = state.playedAt(
-          cellRow: cellRow,
-          cellColumn: cellColumn,
-        );
-        if (state.board.critical) {
-            state = state.reacted();
-        }
-      });
-
-      timer?.cancel();
-      timer = Timer.periodic(reactionAnimationSpeed, (final timer) {
-        if (state.board.critical) {
-          setState(() {
-            state = state.reacted();
-          });
-        } else {
-          timer.cancel();
-        }
-      });
+      game.play(cellRow: cellRow, cellColumn: cellColumn);
     }
 
     void onRestartGame() {
-      setState(() {
-        state = GameState.ofSize(
-          playerCount: widget.playerCount,
-          boardWidth: widget.boardSize.width,
-          boardHeight: widget.boardSize.height,
-        );
-        showGameOverScreen = false;
-      });
+      game.restart();
+      showGameOverScreen = false;
     }
 
-    return GamePage(
-      state: state,
-      onPlayedAt: onPlayedAt,
-      showGameOverScreen: showGameOverScreen,
-      onRestartGame: onRestartGame,
+    return StreamBuilder(
+      stream: game.state,
+      builder: (final context, final snapshot) {
+        final state = snapshot.data;
+        return state != null
+            ? GamePage(
+                state: state,
+                onPlayedAt: onPlayedAt,
+                showGameOverScreen: showGameOverScreen,
+                onRestartGame: onRestartGame,
+              )
+            : const CircularProgressIndicator();
+      },
     );
   }
 

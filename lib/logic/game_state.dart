@@ -103,12 +103,12 @@ class GameState {
 
   factory GameState.ofSize({
     required final int playerCount,
-    required final int boardWidth,
     required final int boardHeight,
+    required final int boardWidth,
   }) {
     return GameState(
       playerCount: playerCount,
-      board: Board.ofSize(width: boardWidth, height: boardHeight),
+      board: Board.ofSize(height: boardHeight, width: boardWidth),
     );
   }
 
