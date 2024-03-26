@@ -150,34 +150,30 @@ class BoardCanvas {
     final criticalMass =
         board.cellTypeAt(cellRow: cellRow, cellColumn: cellColumn).criticalMass;
 
+    final randomRevolutionOffset =
+        Random(31 * cellColumn + cellRow).nextDouble() * 2 * pi;
+
     final angle = switch (criticalMass - mass) {
-      <= 1 => lerpDouble(-pi, pi, (animationProgress * 8) % 1)!,
-      2 => lerpDouble(-pi, pi, (animationProgress * 4) % 1)!,
-      _ => lerpDouble(-pi, pi, animationProgress)!,
-    };
+          <= 1 => lerpDouble(-pi, pi, (animationProgress * 8) % 1)!,
+          2 => lerpDouble(-pi, pi, (animationProgress * 4) % 1)!,
+          _ => lerpDouble(-pi, pi, animationProgress)!,
+        } +
+        revolutionOffset +
+        randomRevolutionOffset;
+
+    final orbCenter = Offset(
+      cellCenter.dx + offsetFromCenter * cos(angle),
+      cellCenter.dy + offsetFromCenter * sin(angle),
+    );
 
     final paint = Paint()
       ..style = PaintingStyle.fill
       ..color = playerColors[player];
 
-    final orbCenter = Offset(
-      cellCenter.dx - offsetFromCenter,
-      cellCenter.dy,
-    );
-
-    final randomRevolutionOffset =
-        Random(31 * cellColumn + cellRow).nextDouble() * 2 * pi;
-
-    canvas.drawRotated(
-      cellCenter,
-      angle + revolutionOffset + randomRevolutionOffset,
-      () {
-        canvas.drawCircle(
-          orbCenter,
-          orbRadius,
-          paint,
-        );
-      },
+    canvas.drawCircle(
+      orbCenter,
+      orbRadius,
+      paint,
     );
   }
 }
