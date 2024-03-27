@@ -28,4 +28,6 @@ const playerColors = [
   Colors.pink,
 ];
 
-const reactionAnimationSpeed = Duration(milliseconds: 500);
+const materializationAnimationSpeed = Duration(milliseconds: 100);
+
+const fissionAnimationSpeed = Duration(milliseconds: 500);

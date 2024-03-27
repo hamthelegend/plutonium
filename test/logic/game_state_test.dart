@@ -92,7 +92,7 @@ void main() {
       ].toUnmodifiableMatrixView()),
     );
     final reactedGame = state.reacted();
-    expect(reactedGame.board.changeMatrix[0][0], Change.fission);
+    expect(reactedGame.board.changeMatrix[0][0], Change.fissioned);
   });
 
   test('Everyone can play on game start', () {

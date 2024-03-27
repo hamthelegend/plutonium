@@ -148,18 +148,19 @@ class Board {
     }
 
     final oldCell = cellMatrix[cellRow][cellColumn];
+    final Cell(player: oldPlayer, mass: oldMass) = oldCell;
     final newCellMatrix = cellMatrix.toMatrix();
 
-    if (oldCell.player != null && oldCell.player != player) {
+    if (oldPlayer != null && oldPlayer != player) {
       throw InvalidCellPlayerException(cell: oldCell, newPlayer: player);
     }
 
     newCellMatrix[cellRow][cellColumn] =
-        Cell(player: player, mass: oldCell.mass + 1);
+        Cell(player: player, mass: oldMass + 1);
 
     final changeMatrix =
         generateMatrix(height, width, (final index) => Change.none);
-    changeMatrix[cellRow][cellColumn] = Change.materialization;
+    changeMatrix[cellRow][cellColumn] = Change.materialized;
 
     return Board(
       cellMatrix: newCellMatrix.toUnmodifiableMatrixView(),
@@ -208,23 +209,26 @@ class Board {
       (cellRow + 1, cellColumn),
     ];
 
-    final oldCell = cellMatrix[cellRow][cellColumn];
+    final Cell(player: oldPlayer, mass: oldMass) =
+        cellMatrix[cellRow][cellColumn];
     final cellType = cellTypeAt(cellRow: cellRow, cellColumn: cellColumn);
-    final newMass = oldCell.mass - cellType.criticalMass;
+    final newMass = oldMass - cellType.criticalMass;
 
     cellMatrix[cellRow][cellColumn] = Cell(
-      player: newMass > 0 ? oldCell.player : null,
+      player: newMass > 0 ? oldPlayer : null,
       mass: newMass,
     );
 
-    changeMatrix[cellRow][cellColumn] = Change.fission;
+    changeMatrix[cellRow][cellColumn] = Change.fissioned;
 
     for (final (adjacentRow, adjacentColumn) in adjacentCoordinates) {
       if (_isValidCoordinate(
-          cellRow: adjacentRow, cellColumn: adjacentColumn)) {
+        cellRow: adjacentRow,
+        cellColumn: adjacentColumn,
+      )) {
         final oldAdjacentCell = cellMatrix[adjacentRow][adjacentColumn];
         cellMatrix[adjacentRow][adjacentColumn] =
-            Cell(player: oldCell.player, mass: oldAdjacentCell.mass + 1);
+            Cell(player: oldPlayer, mass: oldAdjacentCell.mass + 1);
       }
     }
   }

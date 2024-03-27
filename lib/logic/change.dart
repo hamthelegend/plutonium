@@ -1,5 +1,5 @@
 enum Change {
   none,
-  materialization,
-  fission,
+  materialized,
+  fissioned,
 }

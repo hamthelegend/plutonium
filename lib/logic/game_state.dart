@@ -83,11 +83,12 @@ class GameState {
       playerCount: playerCount,
       board: board,
     );
+    final GameState(:playersInPlay) = state;
 
-    if (!state.playersInPlay.contains(state.currentPlayer)) {
-      var correctedPlayer = state.currentPlayer;
-      while (!state.playersInPlay.contains(correctedPlayer)) {
-        correctedPlayer = (correctedPlayer + 1) % state.playerCount;
+    if (!playersInPlay.contains(currentPlayer)) {
+      var correctedPlayer = currentPlayer;
+      while (!playersInPlay.contains(correctedPlayer)) {
+        correctedPlayer = (correctedPlayer + 1) % playerCount;
       }
 
       return GameState(

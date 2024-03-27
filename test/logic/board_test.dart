@@ -169,7 +169,7 @@ void main() {
     expect(changeMatrix[0][1], Change.none);
     expect(changeMatrix[0][2], Change.none);
     expect(changeMatrix[1][0], Change.none);
-    expect(changeMatrix[1][1], Change.fission);
+    expect(changeMatrix[1][1], Change.fissioned);
     expect(changeMatrix[1][2], Change.none);
     expect(changeMatrix[2][0], Change.none);
     expect(changeMatrix[2][1], Change.none);
@@ -189,8 +189,8 @@ void main() {
     expect(cellMatrix[1][1], Cell(player: 1, mass: 2));
 
     final changeMatrix = reactedBoard.changeMatrix.toMatrix();
-    expect(changeMatrix[0][0], Change.fission);
-    expect(changeMatrix[0][1], Change.fission);
+    expect(changeMatrix[0][0], Change.fissioned);
+    expect(changeMatrix[0][1], Change.fissioned);
     expect(changeMatrix[1][0], Change.none);
     expect(changeMatrix[1][1], Change.none);
   });

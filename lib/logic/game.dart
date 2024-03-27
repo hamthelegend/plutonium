@@ -44,7 +44,7 @@ class Game {
 
   void _react() {
     timer?.cancel();
-    timer = Timer.periodic(reactionAnimationSpeed, (final timer) {
+    timer = Timer.periodic(fissionAnimationSpeed, (final timer) {
       final state = _stateBehaviorSubject.value;
       if (state.board.critical) {
         _stateBehaviorSubject.add(state.reacted());

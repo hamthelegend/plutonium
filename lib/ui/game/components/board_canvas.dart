@@ -2,32 +2,49 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:plutonium/logic/matrix.dart';
 
 import '../../../constants.dart';
 import '../../../logic/board.dart';
+import '../../../logic/cell.dart';
+import '../../../logic/change.dart';
 
-typedef CellInfo = ({int cellRow, int cellColumn, int player, int mass});
+class CellInfo {
+  final int cellRow;
+  final int cellColumn;
+  final int player;
+  final int mass;
+  final Change change;
+
+  CellInfo({
+    required this.cellRow,
+    required this.cellColumn,
+    required this.player,
+    required this.mass,
+    required this.change,
+  });
+}
 
 class BoardCanvas {
   final Canvas canvas;
   final Size size;
   final ThemeData theme;
   final Board board;
-  final double animationProgress;
+  final double orbitProgress;
+  final double materializationProgress;
 
   double get cellLength => size.width / board.width;
 
   double get cellGridGap => cellLength / 4;
 
-  double get orbRadius => cellLength / 8;
+  double get baseOrbRadius => cellLength / 8;
 
   BoardCanvas({
     required this.canvas,
     required this.size,
     required this.theme,
     required this.board,
-    required this.animationProgress,
+    required this.orbitProgress,
+    required this.materializationProgress,
   });
 
   void draw() {
@@ -36,6 +53,8 @@ class BoardCanvas {
   }
 
   void _drawGridSegments() {
+    final Board(:height, :width) = board;
+
     void drawCellGridSegments(final int cellRow, final int cellColumn) {
       if (cellRow > 0) {
         _drawHorizontalSegment(cellRow, cellColumn);
@@ -45,8 +64,8 @@ class BoardCanvas {
       }
     }
 
-    for (var cellRow = 0; cellRow < board.height; cellRow++) {
-      for (var cellColumn = 0; cellColumn < board.width; cellColumn++) {
+    for (var cellRow = 0; cellRow < height; cellRow++) {
+      for (var cellColumn = 0; cellColumn < width; cellColumn++) {
         drawCellGridSegments(cellRow, cellColumn);
       }
     }
@@ -89,18 +108,20 @@ class BoardCanvas {
   }
 
   void _drawOrbs() {
-    final cellMatrix = board.cellMatrix.toMatrix();
-    for (var cellRow = 0; cellRow < board.height; cellRow++) {
-      for (var cellColumn = 0; cellColumn < board.width; cellColumn++) {
-        final cell = cellMatrix[cellRow][cellColumn];
-        final player = cell.player;
+    final Board(:height, :width, :cellMatrix, :changeMatrix) = board;
+
+    for (var cellRow = 0; cellRow < height; cellRow++) {
+      for (var cellColumn = 0; cellColumn < width; cellColumn++) {
+        final Cell(:player, :mass) = cellMatrix[cellRow][cellColumn];
+        final change = changeMatrix[cellRow][cellColumn];
 
         if (player != null) {
-          _drawCellOrbs((
+          _drawCellOrbs(CellInfo(
             cellColumn: cellColumn,
             cellRow: cellRow,
             player: player,
-            mass: cell.mass,
+            mass: mass,
+            change: change,
           ));
         }
       }
@@ -108,28 +129,15 @@ class BoardCanvas {
   }
 
   void _drawCellOrbs(final CellInfo cellInfo) {
-    if (cellInfo.mass == 1) {
-      _drawOrb(cellInfo, offsetFromCenter: orbRadius * 0.75);
-    } else if (cellInfo.mass == 2) {
-      final offsetFromCenter = orbRadius * 1.25;
-      _drawOrb(cellInfo, offsetFromCenter: offsetFromCenter);
+    final CellInfo(:mass, :change) = cellInfo;
+    for (var orbNumber = 0; orbNumber < mass; orbNumber++) {
+      final lastOrbOfCell = orbNumber == mass - 1;
+
       _drawOrb(
         cellInfo,
-        offsetFromCenter: offsetFromCenter,
-        revolutionOffset: pi,
-      );
-    } else {
-      final offsetFromCenter = orbRadius * 1.75;
-      _drawOrb(cellInfo, offsetFromCenter: offsetFromCenter);
-      _drawOrb(
-        cellInfo,
-        offsetFromCenter: offsetFromCenter,
-        revolutionOffset: 2 * pi / 3,
-      );
-      _drawOrb(
-        cellInfo,
-        offsetFromCenter: offsetFromCenter,
-        revolutionOffset: 4 * pi / 3,
+        offsetFromCenter: baseOrbRadius * (0.25 + mass * 0.5),
+        revolutionOffset: 2 * orbNumber * pi / mass,
+        animateMaterialization: lastOrbOfCell && change == Change.materialized,
       );
     }
   }
@@ -137,9 +145,10 @@ class BoardCanvas {
   void _drawOrb(
     final CellInfo cellInfo, {
     required final double offsetFromCenter,
-    final double revolutionOffset = 0,
+    required final double revolutionOffset,
+    final bool animateMaterialization = false,
   }) {
-    final (:cellRow, :cellColumn, :player, :mass) = cellInfo;
+    final CellInfo(:cellRow, :cellColumn, :player, :mass) = cellInfo;
 
     final cellCenter = Offset(
       (cellColumn + 0.5) * cellLength,
@@ -153,9 +162,9 @@ class BoardCanvas {
         Random(31 * cellColumn + cellRow).nextDouble() * 2 * pi;
 
     final angle = switch (criticalMass - mass) {
-          <= 1 => lerpDouble(-pi, pi, (animationProgress * 8) % 1)!,
-          2 => lerpDouble(-pi, pi, (animationProgress * 4) % 1)!,
-          _ => lerpDouble(-pi, pi, animationProgress)!,
+          <= 1 => lerpDouble(-pi, pi, (orbitProgress * 8) % 1)!,
+          2 => lerpDouble(-pi, pi, (orbitProgress * 4) % 1)!,
+          _ => lerpDouble(-pi, pi, orbitProgress)!,
         } +
         revolutionOffset +
         randomRevolutionOffset;
@@ -168,6 +177,9 @@ class BoardCanvas {
     final paint = Paint()
       ..style = PaintingStyle.fill
       ..color = playerColors[player];
+
+    final orbRadius =
+        baseOrbRadius * (animateMaterialization ? materializationProgress : 1);
 
     canvas.drawCircle(
       orbCenter,

@@ -6,12 +6,14 @@ import '../../../logic/board.dart';
 class BoardPainter extends CustomPainter {
   final ThemeData theme;
   final Board board;
-  final double animationProgress;
+  final double orbitProgress;
+  final double materializationProgress;
 
   BoardPainter({
     required this.theme,
     required this.board,
-    required this.animationProgress,
+    required this.orbitProgress,
+    required this.materializationProgress,
   });
 
   @override
@@ -21,12 +23,13 @@ class BoardPainter extends CustomPainter {
       size: size,
       theme: theme,
       board: board,
-      animationProgress: animationProgress,
+      orbitProgress: orbitProgress,
+      materializationProgress: materializationProgress,
     ).draw();
   }
 
   @override
   bool shouldRepaint(covariant final BoardPainter oldDelegate) {
-    return oldDelegate.animationProgress != animationProgress;
+    return oldDelegate.orbitProgress != orbitProgress;
   }
 }
